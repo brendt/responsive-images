@@ -36,7 +36,7 @@ class ResponsiveFactory {
     /**
      * ResponsiveFactory constructor.
      *
-     * @param        $compileDir
+     * @param string $compileDir
      * @param string $driver
      * @param float  $stepModifier
      * @param int    $minsize
@@ -58,7 +58,7 @@ class ResponsiveFactory {
     }
 
     /**
-     * @param $path
+     * @param string $path
      *
      * @return ResponsiveImage
      * @throws FileNotFoundException
