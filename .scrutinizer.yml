@@ -6,3 +6,7 @@ build:
         override:
             -
                 command: 'phpunit'
+checks:
+    php:
+        code_rating: true
+        duplication: true
