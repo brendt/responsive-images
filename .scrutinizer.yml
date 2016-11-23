@@ -1,0 +1,8 @@
+build:
+    environment:
+        php:
+            version: 5.6
+    tests:
+        override:
+            -
+                command: 'phpunit'

@@ -1,0 +1,27 @@
+{
+    "name" : "brendt/responsive-images",
+    "description" : "Create responsive images with PHP, using the srcset and sizes spec.",
+    "license" : "MIT",
+    "authors" : [
+        {
+            "name" : "Brent",
+            "email" : "brent@pageon.be"
+        }
+    ],
+    "require" : {
+        "PHP" : ">=5.6",
+        "symfony/finder" : "^3.1",
+        "intervention/image": "^2.3"
+    },
+    "require-dev" : {
+        "larapack/dd" : "^1.0",
+        "symfony/filesystem" : "^3.1",
+        "phpunit/phpunit" : "^5.6"
+    },
+    "autoload" : {
+        "psr-4" : {
+            "brendt\\image\\" : "src/",
+            "brendt\\tests\\" : "tests/"
+        }
+    }
+}
