@@ -36,7 +36,7 @@ class ResponsiveFactory {
     /**
      * ResponsiveFactory constructor.
      *
-     * @param        $compileDir
+     * @param string $compileDir
      * @param string $driver
      * @param float  $stepModifier
      * @param int    $minsize
@@ -58,7 +58,7 @@ class ResponsiveFactory {
     }
 
     /**
-     * @param $path
+     * @param string $path
      *
      * @return ResponsiveImage
      * @throws FileNotFoundException
@@ -69,7 +69,7 @@ class ResponsiveFactory {
 
         $fs = new Filesystem();
         if (!$fs->exists($sourcePath)) {
-            $fs->copy($path, $sourcePath);
+            $fs->copy($file->getPathname(), $sourcePath);
         }
 
         $sourceImage = new ResponsiveImage($sourcePath);
