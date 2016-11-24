@@ -69,7 +69,7 @@ class ResponsiveFactory {
 
         $fs = new Filesystem();
         if (!$fs->exists($sourcePath)) {
-            $fs->copy($path, $sourcePath);
+            $fs->copy($file->getPathname(), $sourcePath);
         }
 
         $sourceImage = new ResponsiveImage($sourcePath);
