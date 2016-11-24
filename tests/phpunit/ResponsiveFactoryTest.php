@@ -9,6 +9,7 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase {
 
     public function test_create() {
         $compileDir = './tests/compile';
+        $publicDir = '/tests/compile';
         $fs = new Filesystem();
         if ($fs->exists($compileDir)) {
             $fs->remove($compileDir);
@@ -23,7 +24,7 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($fs->exists("{$compileDir}/image.jpeg"));
 
         $this->assertNotEmpty($image->srcset());
-        $this->assertEquals("{$compileDir}/image.jpeg", $image->src());
+        $this->assertEquals("{$publicDir}/image.jpeg", $image->src());
     }
 
 }

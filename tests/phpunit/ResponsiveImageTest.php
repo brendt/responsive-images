@@ -9,7 +9,7 @@ class ResponsiveImageTest extends \PHPUnit_Framework_TestCase {
     public function test_construct() {
         $image = new ResponsiveImage('tests/img/image.jpeg');
 
-        $this->assertEquals('./tests/img/image.jpeg', $image->getSrc());
+        $this->assertEquals('/tests/img/image.jpeg', $image->getSrc());
         $this->assertEquals('tests/img/image.jpeg', $image->getFile()->getRelativePathName());
     }
 
@@ -23,7 +23,7 @@ class ResponsiveImageTest extends \PHPUnit_Framework_TestCase {
     public function test_src() {
         $image = new ResponsiveImage('tests/img/image.jpeg');
 
-        $this->assertEquals('./tests/img/image.jpeg', $image->src());
+        $this->assertEquals('/tests/img/image.jpeg', $image->src());
     }
 
     public function test_srcset() {
@@ -31,13 +31,13 @@ class ResponsiveImageTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertEquals('', $image->srcset());
 
-        $image->addSource('./img/test-500.jpg', '500px');
+        $image->addSource('/img/test-500.jpg', '500px');
         $image->addSource([
             'img/test.jpg' => 1920,
             'img/test-300' => 300,
         ]);
 
-        $this->assertEquals('./img/test.jpg 1920w,./img/test-500.jpg 500w,./img/test-300 300w', $image->srcset());
+        $this->assertEquals('/img/test.jpg 1920w,/img/test-500.jpg 500w,/img/test-300 300w', $image->srcset());
     }
 
     public function test_sizes() {

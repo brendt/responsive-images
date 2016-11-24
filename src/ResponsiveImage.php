@@ -36,7 +36,7 @@ class ResponsiveImage {
      */
     public function __construct($src) {
         $this->file = $this->getImageFile($src);
-        $this->src = "./{$this->file->getRelativePathname()}";
+        $this->src = "/{$this->file->getRelativePathname()}";
     }
 
     /**
@@ -56,7 +56,7 @@ class ResponsiveImage {
             $path = ltrim($path, './');
             $width = rtrim($width, 'px');
 
-            $this->srcset[$width] = "./{$path}";
+            $this->srcset[$width] = "/{$path}";
         }
 
         krsort($this->srcset);
