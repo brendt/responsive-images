@@ -34,14 +34,20 @@ class ResponsiveFactory {
     protected $engine;
 
     /**
+     * @var bool
+     */
+    private $enableCache;
+
+    /**
      * ResponsiveFactory constructor.
      *
      * @param string $compileDir
      * @param string $driver
      * @param float  $stepModifier
      * @param int    $minsize
+     * @param bool   $enableCache
      */
-    public function __construct($compileDir, $driver = 'gd', $stepModifier = 0.1, $minsize = 300) {
+    public function __construct($compileDir, $driver = 'gd', $stepModifier = 0.1, $minsize = 300, $enableCache = false) {
         $this->compileDir = './' . trim($compileDir, './');
 
         $fs = new Filesystem();
@@ -55,6 +61,7 @@ class ResponsiveFactory {
 
         $this->stepModifier = $stepModifier;
         $this->minsize = $minsize;
+        $this->enableCache = $enableCache;
     }
 
     /**
@@ -99,8 +106,10 @@ class ResponsiveFactory {
 
             $scaledPath = "{$this->compileDir}/{$name}-{$width}.{$extension}";
 
-            $image->resize($width, $height)
-                ->save($scaledPath);
+            if (!$this->enableCache || !$fs->exists($scaledPath)) {
+                $image->resize($width, $height)
+                    ->save($scaledPath);
+            }
 
             $sourceImage->addSource($scaledPath, $width);
 
