@@ -2,6 +2,7 @@
 
 namespace brendt\image;
 
+use brendt\image\config\ResponsiveFactoryConfigurator;
 use brendt\image\exception\FileNotFoundException;
 use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\ImageManager;
@@ -12,150 +13,212 @@ use Symfony\Component\Finder\SplFileInfo;
 class ResponsiveFactory {
 
     /**
-     * The compile directory to store images.
+     * The image driver to use.
+     * Available drivers: 'gd' and 'imagick'.
      *
      * @var string
      */
-    protected $compileDir;
+    protected $driver;
 
     /**
-     * @var float
+     * The source path to load images from.
+     *
+     * @var string
      */
-    protected $stepModified = 0.1;
+    protected $sourcePath;
 
     /**
+     * The public path to save rendered images.
+     *
+     * @var string
+     */
+    protected $publicPath;
+
+    /**
+     * The minimum file size of generated images.
+     * No image with a size less then this amount (in KB), will be generated.
+     *
      * @var integer
      */
-    protected $minsize = 300;
+    protected $minSize;
 
     /**
-     * @var ImageManager
-     */
-    protected $engine;
-
-    /**
+     * Enabled cache will stop generated images from being overwritten.
+     *
      * @var bool
      */
     private $enableCache;
 
     /**
+     * A percentage (between 0 and 1) to decrease image sizes with.
+     *
+     * @var float
+     */
+    protected $stepModifier;
+
+    /**
+     * The Intervention image engine.
+     *
+     * @var ImageManager
+     */
+    protected $engine;
+
+    /**
+     * @var Filesystem
+     */
+    protected $fs;
+
+    /**
      * ResponsiveFactory constructor.
      *
-     * @param string $compileDir
-     * @param string $driver
-     * @param float  $stepModifier
-     * @param int    $minsize
-     * @param bool   $enableCache
+     * @param ResponsiveFactoryConfigurator $configurator
      */
-    public function __construct($compileDir, $driver = 'gd', $stepModifier = 0.1, $minsize = 300, $enableCache = false) {
-        $this->compileDir = './' . trim($compileDir, './');
-
-        $fs = new Filesystem();
-        if (!$fs->exists($this->compileDir)) {
-            $fs->mkdir($this->compileDir);
-        }
-
+    public function __construct(ResponsiveFactoryConfigurator $configurator) {
+        $configurator->configure($this);
+        $this->sourcePath = rtrim($this->sourcePath, '/');
+        $this->publicPath = rtrim($this->publicPath, '/');
         $this->engine = new ImageManager([
-            'driver' => $driver,
+            'driver' => $this->driver,
         ]);
 
-        $this->stepModifier = $stepModifier;
-        $this->minsize = $minsize;
-        $this->enableCache = $enableCache;
+        $this->fs = new Filesystem();
+        if (!$this->fs->exists($this->publicPath)) {
+            $this->fs->mkdir($this->publicPath);
+        }
     }
 
     /**
-     * @param string $path
+     * @param string $src
      *
      * @return ResponsiveImage
      * @throws FileNotFoundException
      */
-    public function create($path) {
-        $file = $this->getImageFile($path);
-        $sourcePath = "{$this->compileDir}/{$file->getFilename()}";
+    public function create($src) {
+        $image = new ResponsiveImage($src);
+        $src = $image->src();
+        $sourceImage = $this->getImageFile($this->sourcePath, $src);
+        $publicImagePath = "{$this->publicPath}/{$src}";
 
-        $fs = new Filesystem();
-        if (!$fs->exists($sourcePath)) {
-            $fs->copy($file->getPathname(), $sourcePath);
-        }
-
-        $sourceImage = new ResponsiveImage($sourcePath);
-        $sourceFile = $sourceImage->getFile();
-
-        try {
-            $image = $this->engine->make($sourceFile->getPathname());
-        } catch (NotReadableException $e) {
-            throw new FileNotFoundException($sourceFile->getPathname());
-        }
-
-        $extension = $sourceFile->getExtension();
-        $name = str_replace(".{$extension}", '', $sourceFile->getFilename());
-
-        $width = $image->getWidth();
-        $stepWidth = $width * $this->stepModifier;
-        $height = $image->getHeight();
-        $stepHeight = $height * $this->stepModifier;
-
-        while ($width >= $this->minsize) {
-            if ($width === $image->getWidth()) {
-                $width -= $stepWidth;
-                $height -= $stepHeight;
-
-                continue;
+        if (!$this->enableCache || !$this->fs->exists($publicImagePath)) {
+            if ($this->fs->exists($publicImagePath)) {
+                $this->fs->remove($publicImagePath);
             }
 
-            $scaledPath = "{$this->compileDir}/{$name}-{$width}.{$extension}";
+            $this->fs->dumpFile($publicImagePath, $sourceImage->getContents());
+        }
 
-            if (!$this->enableCache || !$fs->exists($scaledPath)) {
-                $image->resize($width, $height)
-                    ->save($scaledPath);
+        $extension = $sourceImage->getExtension();
+        $name = str_replace(".{$extension}", '', $sourceImage->getFilename());
+
+        $urlParts = explode('/', $src);
+        array_pop($urlParts);
+        $urlPath = implode('/', $urlParts);
+
+        $imageObject = $this->engine->make($sourceImage->getPathname());
+        $width = $imageObject->getWidth();
+        $height = $imageObject->getHeight();
+        $stepWidth = (int) ($width * $this->stepModifier);
+        $stepHeight = (int) ($height * $this->stepModifier);
+        $width -= $stepWidth;
+        $height -= $stepHeight;
+
+        while ($width >= $this->minSize) {
+            $scaledName = "{$name}-{$width}.{$extension}";
+            $scaledSrc = "{$urlPath}/{$scaledName}";
+            $image->addSource($scaledSrc, $width);
+
+            $publicScaledPath = "{$this->publicPath}/{$urlPath}/{$scaledName}";
+            if (!$this->enableCache || !$this->fs->exists($publicScaledPath)) {
+                $this->fs->dumpFile(
+                    $publicScaledPath,
+                    $imageObject->resize($width, $height)->encode($extension)
+                );
             }
-
-            $sourceImage->addSource($scaledPath, $width);
 
             $width -= $stepWidth;
             $height -= $stepHeight;
         }
 
-        return $sourceImage;
+        return $image;
     }
 
     /**
-     * @param int $minsize
-     *
-     * @return ResponsiveFactory
-     */
-    public function setMinsize($minsize) {
-        $this->minsize = $minsize;
-
-        return $this;
-    }
-
-    /**
-     * @param float $stepModified
-     *
-     * @return ResponsiveFactory
-     */
-    public function setStepModified($stepModified) {
-        $this->stepModified = $stepModified;
-
-        return $this;
-    }
-
-    /**
-     * @param $src
+     * @param        $directory
+     * @param string $path
      *
      * @return SplFileInfo
-     * @throws FileNotFoundException
      */
-    private function getImageFile($src) {
-        $files = Finder::create()->files()->in('.')->path(trim($src, './'));
+    private function getImageFile($directory, $path) {
+        $iterator = Finder::create()->files()->in($directory)->path($path)->getIterator();
+        $iterator->rewind();
 
-        foreach ($files as $file) {
-            return $file;
-        }
+        return $iterator->current();
+    }
 
-        throw new FileNotFoundException($src);
+    /**
+     * @param string $driver
+     *
+     * @return ResponsiveFactory
+     */
+    public function setDriver($driver) {
+        $this->driver = $driver;
+
+        return $this;
+    }
+
+    /**
+     * @param string $publicPath
+     *
+     * @return ResponsiveFactory
+     */
+    public function setPublicPath($publicPath) {
+        $this->publicPath = $publicPath;
+
+        return $this;
+    }
+
+    /**
+     * @param boolean $enableCache
+     *
+     * @return ResponsiveFactory
+     */
+    public function setEnableCache($enableCache) {
+        $this->enableCache = $enableCache;
+
+        return $this;
+    }
+
+    /**
+     * @param int $minSize
+     *
+     * @return ResponsiveFactory
+     */
+    public function setMinSize($minSize) {
+        $this->minSize = $minSize;
+
+        return $this;
+    }
+
+    /**
+     * @param float $stepModifier
+     *
+     * @return ResponsiveFactory
+     */
+    public function setStepModifier($stepModifier) {
+        $this->stepModifier = $stepModifier;
+
+        return $this;
+    }
+
+    /**
+     * @param string $sourcePath
+     *
+     * @return ResponsiveFactory
+     */
+    public function setSourcePath($sourcePath) {
+        $this->sourcePath = $sourcePath;
+
+        return $this;
     }
 
 }

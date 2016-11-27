@@ -23,20 +23,22 @@ class ResponsiveImage {
      * @var string[]
      */
     private $sizes = [];
-
-    /**
-     * @var SplFileInfo
-     */
-    private $file;
-
     /**
      * ResponsiveImage constructor.
      *
      * @param      $src
      */
     public function __construct($src) {
-        $this->file = $this->getImageFile($src);
-        $this->src = "/{$this->file->getRelativePathname()}";
+        $src = preg_replace('/^(\/|\.\/)/', '', $src);
+
+        $this->src = "/{$src}";
+    }
+
+    /**
+     * @return string
+     */
+    public function src() {
+        return $this->src;
     }
 
     /**
@@ -52,16 +54,29 @@ class ResponsiveImage {
             return $this;
         }
 
-        foreach ($sources as $path => $width) {
-            $path = ltrim($path, './');
-            $width = rtrim($width, 'px');
+        foreach ($sources as $url => $width) {
+            $url = ltrim($url, '/');
+            $width = str_replace('px', '', $width);
 
-            $this->srcset[$width] = "/{$path}";
+            $this->srcset[$width] = "/{$url}";
         }
 
         krsort($this->srcset);
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function srcset() {
+        $srcset = [];
+
+        foreach ($this->srcset as $w => $url) {
+            $srcset[] = "{$url} {$w}w";
+        }
+
+        return implode(',', $srcset);
     }
 
     /**
@@ -87,26 +102,6 @@ class ResponsiveImage {
     /**
      * @return string
      */
-    public function src() {
-        return $this->src;
-    }
-
-    /**
-     * @return string
-     */
-    public function srcset() {
-        $srcset = [];
-
-        foreach ($this->srcset as $w => $path) {
-            $srcset[] = "{$path} {$w}w";
-        }
-
-        return implode(',', $srcset);
-    }
-
-    /**
-     * @return string
-     */
     public function sizes() {
         $sizes = [];
 
@@ -121,36 +116,6 @@ class ResponsiveImage {
         }
 
         return implode(', ', $sizes);
-    }
-
-    /**
-     * @return string
-     */
-    public function getSrc() {
-        return $this->src;
-    }
-
-    /**
-     * @return mixed|\Symfony\Component\Finder\SplFileInfo
-     */
-    public function getFile() {
-        return $this->file;
-    }
-
-    /**
-     * @param $src
-     *
-     * @return SplFileInfo
-     * @throws FileNotFoundException
-     */
-    private function getImageFile($src) {
-        $files = Finder::create()->files()->in('.')->path(trim($src, './'));
-
-        foreach ($files as $file) {
-            return $file;
-        }
-
-        throw new FileNotFoundException($src);
     }
 
 }
