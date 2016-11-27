@@ -117,6 +117,8 @@ class ResponsiveFactory {
         $imageObject = $this->engine->make($sourceImage->getPathname());
         $width = $imageObject->getWidth();
         $height = $imageObject->getHeight();
+        $image->addSource($src, $width);
+
         $stepWidth = (int) ($width * $this->stepModifier);
         $stepHeight = (int) ($height * $this->stepModifier);
         $width -= $stepWidth;

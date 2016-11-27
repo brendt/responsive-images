@@ -86,4 +86,14 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase {
         $this->assertContains('/img/image-384.jpeg', $srcset);
         $this->assertContains('/img/image-1152.jpeg', $srcset);
     }
+
+    public function test_create_sets_default_srcset() {
+        $factory = new ResponsiveFactory($this->configurator);
+        $url = 'img/image.jpeg';
+        $image = $factory->create($url);
+
+        $srcset = $image->srcset();
+
+        $this->assertContains('/img/image.jpeg 1920w', $srcset);
+    }
 }
