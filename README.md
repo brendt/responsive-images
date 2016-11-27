@@ -12,37 +12,70 @@ composer require brendt/responsive-images
 
 ```php
 use brendt\image\ResponsiveFactory;
+use brendt\image\config\DefaultConfigurator;
 
-$public = './public/img';
-$factory = new ResponsiveFactory($public);
-
-$image = $factory->create('./data/img/image.jpeg');
-$image->addSizes([
-    'min-width: 920px' => '50vw',
-    'min-width: 1200px' => '33vw',
-    '100vw',
-]);
+$factory = new ResponsiveFactory(new DefaultConfigurator());
+$image = $factory->create('img/image.jpeg');
 ```
 
 ```html
 <img src="<?= $image->src() ?>" 
-     srcset="<?= $image->srcset() ?>"
-     sizes="<?= $image->sizes() ?>" />
+     srcset="<?= $image->srcset() ?>"/>
 ```
 
 This sample would generate something like:
 
 ```hmtl
-<img src="./public/img/image.jpeg" 
-     srcset="./public/img/image-384.jpg 384w,
-             ./public/img/image-768.jpg 768w,
-             ./public/img/image-1152.jpg 1152w,
-             ./public/img/image-1536.jpg 1536w,
-             ./public/img/image.jpg 1920w"
-     sizes="(min-width: 920px) 50vw,
-            (min-width: 1200px) 33w,
-            100vw" />
+<img src="/image.jpeg" 
+     srcset="/image-384.jpg 384w,
+             /image-768.jpg 768w,
+             /image-1152.jpg 1152w,
+             /image-1536.jpg 1536w,
+             /image.jpg 1920w" />
 ```
 
-**Note**: `sizes` should never be hardcoded like this example. They should probably come from a configuration file or frontend. 
+## Configuration
 
+The `ResponsiveFactory` requires a `ResponsiveFactoryConfigurator` object which will set the needed parameters. 
+A default configurator `DefaultConfigurator` is provider out of the box, and uses the following parameters:
+ 
+```
+[
+    'driver'       => 'gd',
+    'sourcePath'   => './',
+    'publicPath'   => './',
+    'enableCache'  => false,
+    'stepModifier' => 0.1,
+    'minSize'      => 300,
+]
+```
+
+You can override these parameters by providing and array to the `DefaultConfigurator`, 
+or create a whole new configurator which implements `ResponsiveFactoryConfigurator`.
+
+```
+$factory = new ResponsiveFactory(new DefaultConfigurator([
+    'driver'       => 'imagick',
+    'sourcePath'   => './src',
+    'publicPath'   => './public',
+    'enableCache'  => true,
+]));
+```
+
+### Paths
+
+The `sourcePath` parameter is used to define where image source files are located. 
+In case of the first example and above configuration, the image file should be save in `./src/img/image.jpeg`.
+
+The `publicPath` parameter is used to save rendered images into. This path should be the public directory of your website.
+The above example would render images into `./public/img/image.jpeg`. 
+
+### All configuration options
+
+- `driver`: the image driver to use. Defaults to `gd`. Possible options are `gd` or `imagick`.
+- `sourcePath`: the path to load image source files. Defaults to `./`.
+- `publicPath`: the path to render image files. Defaults to `./`.
+- `enableCache`: enable or disable image caching. Enabling the cache wont' override existing images. Defaults to `false`.
+- `stepModifier`: a percentage (between 0 and 1) which is used to create different image sizes. 
+The lower this modifier, the more image variations will be rendered, Defaults to `0.1`.
+- `minSize`: the minimum image size in KB. No images with  size smaller than this number will be rendered. Defaults to `300`KB.
