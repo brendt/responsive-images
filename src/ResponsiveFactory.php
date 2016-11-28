@@ -97,6 +97,11 @@ class ResponsiveFactory {
         $image = new ResponsiveImage($src);
         $src = $image->src();
         $sourceImage = $this->getImageFile($this->sourcePath, $src);
+
+        if (!$sourceImage) {
+            throw new FileNotFoundException("{$this->sourcePath}{$src}");
+        }
+
         $publicImagePath = "{$this->publicPath}/{$src}";
 
         if (!$this->enableCache || !$this->fs->exists($publicImagePath)) {
@@ -151,7 +156,7 @@ class ResponsiveFactory {
      * @return SplFileInfo
      */
     private function getImageFile($directory, $path) {
-        $iterator = Finder::create()->files()->in($directory)->path($path)->getIterator();
+        $iterator = Finder::create()->files()->in($directory)->path(ltrim($path, '/'))->getIterator();
         $iterator->rewind();
 
         return $iterator->current();
