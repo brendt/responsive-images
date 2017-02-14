@@ -1,6 +1,6 @@
 <?php
 
-namespace brendt\image\exception;
+namespace Brendt\Image\Exception;
 
 class InvalidConfigurationException extends \Exception {
 

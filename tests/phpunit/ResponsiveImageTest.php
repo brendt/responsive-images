@@ -1,10 +1,11 @@
 <?php
 
-namespace brendt\tests\phpunit;
+namespace Brendt\Image\Tests\Phpunit;
 
-use brendt\image\ResponsiveImage;
+use Brendt\Image\ResponsiveImage;
 
-class ResponsiveImageTest extends \PHPUnit_Framework_TestCase {
+class ResponsiveImageTest extends \PHPUnit_Framework_TestCase
+{
 
     public function test_construct() {
         new ResponsiveImage('img/image.jpeg');
@@ -39,7 +40,7 @@ class ResponsiveImageTest extends \PHPUnit_Framework_TestCase {
         $image = new ResponsiveImage('img/image.jpeg');
 
         $image->addSource([
-            'img/test.jpg' => 1920,
+            'img/test.jpg'     => 1920,
             'img/test-300.jpg' => 300,
         ]);
 
@@ -64,7 +65,7 @@ class ResponsiveImageTest extends \PHPUnit_Framework_TestCase {
 
         $image->addSizes([
             'min-width: 1000px' => '50vw',
-            '100vw'
+            '100vw',
         ]);
 
         $this->assertEquals('(min-width: 1000px) 50vw, 100vw', $image->sizes());

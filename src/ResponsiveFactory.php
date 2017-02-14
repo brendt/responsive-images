@@ -1,16 +1,16 @@
 <?php
 
-namespace brendt\image;
+namespace Brendt\Image;
 
-use brendt\image\config\ResponsiveFactoryConfigurator;
-use brendt\image\exception\FileNotFoundException;
-use Intervention\Image\Exception\NotReadableException;
+use Brendt\Image\Config\ResponsiveFactoryConfigurator;
+use Brendt\Image\Exception\FileNotFoundException;
 use Intervention\Image\ImageManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
-class ResponsiveFactory {
+class ResponsiveFactory
+{
 
     /**
      * The image driver to use.

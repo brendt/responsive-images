@@ -1,13 +1,9 @@
 <?php
 
-namespace brendt\image;
+namespace Brendt\Image;
 
-use brendt\image\exception\FileNotFoundException;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
-
-class ResponsiveImage {
+class ResponsiveImage
+{
 
     /**
      * @var string
@@ -23,6 +19,7 @@ class ResponsiveImage {
      * @var string[]
      */
     private $sizes = [];
+
     /**
      * ResponsiveImage constructor.
      *
@@ -80,8 +77,8 @@ class ResponsiveImage {
     }
 
     /**
-     * @param array|string  $sizes
-     * @param null          $value
+     * @param array|string $sizes
+     * @param null         $value
      *
      * @return ResponsiveImage
      */

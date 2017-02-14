@@ -1,10 +1,11 @@
 <?php
 
-namespace brendt\image\config;
+namespace Brendt\Image\Config;
 
-use brendt\image\ResponsiveFactory;
+use Brendt\Image\ResponsiveFactory;
 
-interface ResponsiveFactoryConfigurator {
+interface ResponsiveFactoryConfigurator
+{
 
     /**
      * ResponsiveFactoryConfigurator constructor.
