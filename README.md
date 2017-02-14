@@ -11,8 +11,8 @@ composer require brendt/responsive-images
 ## Usage
 
 ```php
-use brendt\image\ResponsiveFactory;
-use brendt\image\config\DefaultConfigurator;
+use Brendt\Image\ResponsiveFactory;
+use Brendt\Image\Config\DefaultConfigurator;
 
 $factory = new ResponsiveFactory(new DefaultConfigurator());
 $image = $factory->create('img/image.jpeg');
