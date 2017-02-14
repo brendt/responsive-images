@@ -1,11 +1,12 @@
 <?php
 
-namespace brendt\image\config;
+namespace Brendt\Image\Config;
 
-use brendt\image\exception\InvalidConfigurationException;
-use brendt\image\ResponsiveFactory;
+use Brendt\Image\Exception\InvalidConfigurationException;
+use Brendt\Image\ResponsiveFactory;
 
-class DefaultConfigurator implements ResponsiveFactoryConfigurator {
+class DefaultConfigurator implements ResponsiveFactoryConfigurator
+{
 
     protected $config = [
         'driver'       => 'gd',

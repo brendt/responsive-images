@@ -20,8 +20,8 @@
     },
     "autoload" : {
         "psr-4" : {
-            "brendt\\image\\" : "src/",
-            "brendt\\tests\\" : "tests/"
+            "Brendt\\Image\\" : "src/",
+            "Brendt\\Image\\Tests\\Phpunit\\" : "tests/"
         }
     }
 }

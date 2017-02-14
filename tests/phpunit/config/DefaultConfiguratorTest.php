@@ -1,10 +1,11 @@
 <?php
 
-namespace brendt\tests\phpunit\config;
+namespace Brendt\Image\Tests\Phpunit\Config;
 
-use brendt\image\config\DefaultConfigurator;
+use Brendt\Image\Config\DefaultConfigurator;
 
-class DefaultConfiguratorTest extends \PHPUnit_Framework_TestCase {
+class DefaultConfiguratorTest extends \PHPUnit_Framework_TestCase
+{
 
     public function test_default_construct() {
         new DefaultConfigurator();
@@ -12,7 +13,7 @@ class DefaultConfiguratorTest extends \PHPUnit_Framework_TestCase {
 
     public function test_construct_merges_config() {
         $configurator = new DefaultConfigurator([
-            'enableCache' => true
+            'enableCache' => true,
         ]);
 
         $this->assertTrue($configurator->getConfig()['enableCache']);
@@ -20,11 +21,11 @@ class DefaultConfiguratorTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @expectedException brendt\image\exception\InvalidConfigurationException
+     * @expectedException Brendt\Image\Exception\InvalidConfigurationException
      */
     public function test_construct_throws_exception_with_unknown_driver() {
         new DefaultConfigurator([
-            'driver' => 'unknown'
+            'driver' => 'unknown',
         ]);
     }
 

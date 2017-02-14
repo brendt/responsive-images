@@ -1,13 +1,14 @@
 <?php
 
-namespace brendt\tests\phpunit;
+namespace Brendt\Image\Tests\Phpunit;
 
-use brendt\image\config\DefaultConfigurator;
-use brendt\image\config\ResponsiveFactoryConfigurator;
-use brendt\image\ResponsiveFactory;
+use Brendt\Image\Config\DefaultConfigurator;
+use Brendt\Image\Config\ResponsiveFactoryConfigurator;
+use Brendt\Image\ResponsiveFactory;
 use Symfony\Component\Filesystem\Filesystem;
 
-class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase {
+class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
+{
 
     /**
      * @var ResponsiveFactoryConfigurator
