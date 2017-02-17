@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2
+## 1.1
 
 - Add Scaler support
 - Add FileSize scaler as default.
@@ -24,6 +24,6 @@ $factory = new ResponsiveFactory(new DefaultConfigurator([
 
 **Note**: the `stepModifier` parameter is now used different, the higher this modifier, the more images will be generated.
 
-## 1.1
+## 1.0
 
 - Use PSR naming standards.
