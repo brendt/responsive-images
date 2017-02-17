@@ -50,7 +50,7 @@ class WidthScalerTest extends TestCase
     public function setUp() {
         $this->scaler = new WidthScaler(new DefaultConfigurator([
             'scaler' => 'width',
-            'stepModifier' => 0.3,
+            'stepModifier' => 0.8,
             'publicPath' => $this->publicPath
         ]));
     }
@@ -63,6 +63,8 @@ class WidthScalerTest extends TestCase
 
         $this->assertTrue(count($responsiveImage->getSrcset()) > 1);
     }
+
+    // TODO: test algorithm
 
     private function createResponsiveImage() {
         $responsiveImage = new ResponsiveImage('img/image.jpeg');

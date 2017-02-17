@@ -79,9 +79,7 @@ The above example would render images into `./public/img/image.jpeg`.
 - `sourcePath`: the path to load image source files. Defaults to `./`.
 - `publicPath`: the path to render image files. Defaults to `./`.
 - `enableCache`: enable or disable image caching. Enabling the cache wont' override existing images. Defaults to `false`.
-- `stepModifier`: a percentage (between 0 and 1) which is used to create different image sizes. 
-In case of the `width` scaler, the lower this modifier, the more image variations will be rendered. 
-In case of the `filesize` scaler, it will be the opposite, defaults to `0.5`.
+- `stepModifier`: a percentage (between 0 and 1) which is used to create different image sizes. The higher this modifier, the more image variations will be rendered. Defaults to `0.8`.
 - `minFileSize`: the minimum image filesize in bytes. Defaults to `10000`B (10KB).
 - `minWidth`: the minimum image size in pixels. No images with size smaller than this number will be rendered. Defaults to `300` pixels.
 - `scaler`: which scaler algorithm to use. Defaults to `filesize`. Possible options are `filesize` or `width`.

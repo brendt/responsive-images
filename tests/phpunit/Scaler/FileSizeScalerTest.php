@@ -62,6 +62,8 @@ class FileSizeScalerTest extends TestCase
         $this->assertTrue(count($responsiveImage->getSrcset()) > 1);
     }
 
+    // TODO: test algorithm
+
     private function createResponsiveImage() {
         $responsiveImage = new ResponsiveImage('img/image.jpeg');
         $responsiveImage->setExtension('jpeg');

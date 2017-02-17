@@ -21,11 +21,6 @@ class WidthScaler extends AbstractScaler
         $extension = $responsiveImage->getExtension();
         $urlPath = $responsiveImage->getUrlPath();
 
-        $stepWidth = (int) ($width * $this->stepModifier);
-        $stepHeight = (int) ($height * $this->stepModifier);
-        $width -= $stepWidth;
-        $height -= $stepHeight;
-
         while ($width >= $this->minWidth) {
             $scaledName = "{$fileName}-{$width}.{$extension}";
             $scaledSrc = "{$urlPath}/{$scaledName}";
@@ -39,8 +34,8 @@ class WidthScaler extends AbstractScaler
                 );
             }
 
-            $width -= $stepWidth;
-            $height -= $stepHeight;
+            $width = floor($width * $this->stepModifier);
+            $height = floor($height * $this->stepModifier);
         }
 
         return $responsiveImage;
