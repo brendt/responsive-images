@@ -74,6 +74,7 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
      */
     public function configureScaler(Scaler $scaler) {
         $scaler
+            ->setEnableCache($this->config['enableCache'])
             ->setSourcePath($this->config['sourcePath'])
             ->setPublicPath($this->config['publicPath'])
             ->setMinFileSize($this->config['minFileSize'])
