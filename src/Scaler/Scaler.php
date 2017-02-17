@@ -59,5 +59,12 @@ interface Scaler
      */
     public function setStepModifier($stepModifier);
 
+    /**
+     * @param $enableCache
+     *
+     * @return mixed
+     */
+    public function setEnableCache($enableCache);
+
 
 }
