@@ -42,11 +42,14 @@ A default configurator `DefaultConfigurator` is provider out of the box, and use
 ```
 [
     'driver'       => 'gd',
-    'sourcePath'   => './',
     'publicPath'   => './',
+    'sourcePath'   => './',
     'enableCache'  => false,
-    'stepModifier' => 0.1,
+    'stepModifier' => 0.5,
+    'minFileSize'  => 10000,
     'minSize'      => 300,
+    'minWidth'     => 150,
+    'scaler'       => 'filesize',
 ]
 ```
 
@@ -77,5 +80,8 @@ The above example would render images into `./public/img/image.jpeg`.
 - `publicPath`: the path to render image files. Defaults to `./`.
 - `enableCache`: enable or disable image caching. Enabling the cache wont' override existing images. Defaults to `false`.
 - `stepModifier`: a percentage (between 0 and 1) which is used to create different image sizes. 
-The lower this modifier, the more image variations will be rendered, Defaults to `0.1`.
-- `minSize`: the minimum image size in KB. No images with  size smaller than this number will be rendered. Defaults to `300`KB.
+In case of the `width` scaler, the lower this modifier, the more image variations will be rendered. 
+In case of the `filesize` scaler, it will be the opposite, defaults to `0.5`.
+- `minFileSize`: the minimum image filesize in bytes. Defaults to `10000`B (10KB).
+- `minWidth`: the minimum image size in pixels. No images with size smaller than this number will be rendered. Defaults to `300` pixels.
+- `scaler`: which scaler algorithm to use. Defaults to `filesize`. Possible options are `filesize` or `width`.

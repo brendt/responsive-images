@@ -4,6 +4,7 @@ namespace Brendt\Image;
 
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
 use Brendt\Image\Exception\FileNotFoundException;
+use Brendt\Image\Scaler\Scaler;
 use Intervention\Image\ImageManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -35,26 +36,11 @@ class ResponsiveFactory
     protected $publicPath;
 
     /**
-     * The minimum file size of generated images.
-     * No image with a size less then this amount (in KB), will be generated.
-     *
-     * @var integer
-     */
-    protected $minSize;
-
-    /**
      * Enabled cache will stop generated images from being overwritten.
      *
      * @var bool
      */
     private $enableCache;
-
-    /**
-     * A percentage (between 0 and 1) to decrease image sizes with.
-     *
-     * @var float
-     */
-    protected $stepModifier;
 
     /**
      * The Intervention image engine.
@@ -67,6 +53,11 @@ class ResponsiveFactory
      * @var Filesystem
      */
     protected $fs;
+
+    /**
+     * @var Scaler
+     */
+    protected $scaler;
 
     /**
      * ResponsiveFactory constructor.
@@ -94,8 +85,8 @@ class ResponsiveFactory
      * @throws FileNotFoundException
      */
     public function create($src) {
-        $image = new ResponsiveImage($src);
-        $src = $image->src();
+        $responsiveImage = new ResponsiveImage($src);
+        $src = $responsiveImage->src();
         $sourceImage = $this->getImageFile($this->sourcePath, $src);
 
         if (!$sourceImage) {
@@ -113,44 +104,27 @@ class ResponsiveFactory
         }
 
         $extension = $sourceImage->getExtension();
-        $name = str_replace(".{$extension}", '', $sourceImage->getFilename());
+        $fileName = str_replace(".{$extension}", '', $sourceImage->getFilename());
 
         $urlParts = explode('/', $src);
         array_pop($urlParts);
         $urlPath = implode('/', $urlParts);
 
+        $responsiveImage->setExtension($extension);
+        $responsiveImage->setFileName($fileName);
+        $responsiveImage->setUrlPath($urlPath);
+
         $imageObject = $this->engine->make($sourceImage->getPathname());
         $width = $imageObject->getWidth();
-        $height = $imageObject->getHeight();
-        $image->addSource($src, $width);
+        $responsiveImage->addSource($src, $width);
 
-        $stepWidth = (int) ($width * $this->stepModifier);
-        $stepHeight = (int) ($height * $this->stepModifier);
-        $width -= $stepWidth;
-        $height -= $stepHeight;
+        $responsiveImage = $this->scaler->scale($responsiveImage, $imageObject);
 
-        while ($width >= $this->minSize) {
-            $scaledName = "{$name}-{$width}.{$extension}";
-            $scaledSrc = "{$urlPath}/{$scaledName}";
-            $image->addSource($scaledSrc, $width);
-
-            $publicScaledPath = "{$this->publicPath}/{$urlPath}/{$scaledName}";
-            if (!$this->enableCache || !$this->fs->exists($publicScaledPath)) {
-                $this->fs->dumpFile(
-                    $publicScaledPath,
-                    $imageObject->resize($width, $height)->encode($extension)
-                );
-            }
-
-            $width -= $stepWidth;
-            $height -= $stepHeight;
-        }
-
-        return $image;
+        return $responsiveImage;
     }
 
     /**
-     * @param        $directory
+     * @param string $directory
      * @param string $path
      *
      * @return SplFileInfo
@@ -196,28 +170,6 @@ class ResponsiveFactory
     }
 
     /**
-     * @param int $minSize
-     *
-     * @return ResponsiveFactory
-     */
-    public function setMinSize($minSize) {
-        $this->minSize = $minSize;
-
-        return $this;
-    }
-
-    /**
-     * @param float $stepModifier
-     *
-     * @return ResponsiveFactory
-     */
-    public function setStepModifier($stepModifier) {
-        $this->stepModifier = $stepModifier;
-
-        return $this;
-    }
-
-    /**
      * @param string $sourcePath
      *
      * @return ResponsiveFactory
@@ -226,6 +178,13 @@ class ResponsiveFactory
         $this->sourcePath = $sourcePath;
 
         return $this;
+    }
+
+    /**
+     * @param Scaler $scaler
+     */
+    public function setScaler($scaler) {
+        $this->scaler = $scaler;
     }
 
 }

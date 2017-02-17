@@ -46,6 +46,7 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
             'publicPath'   => $this->publicPath,
             'engine'       => 'gd',
             'stepModifier' => 0.2,
+            'scaler'       => 'width',
         ]);
     }
 
