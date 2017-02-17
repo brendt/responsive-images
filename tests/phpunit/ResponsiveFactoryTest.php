@@ -45,7 +45,8 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
         $this->configurator = new DefaultConfigurator([
             'publicPath'   => $this->publicPath,
             'engine'       => 'gd',
-            'stepModifier' => 0.2,
+            'stepModifier' => 0.5,
+            'scaler'       => 'width',
         ]);
     }
 
@@ -53,7 +54,6 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
         $factory = new ResponsiveFactory($this->configurator);
         $image = $factory->create('img/image.jpeg');
 
-        $this->assertTrue($this->fs->exists("{$this->publicPath}/img/image-384.jpeg"));
         $this->assertTrue($this->fs->exists("{$this->publicPath}/img/image.jpeg"));
 
         $this->assertNotEmpty($image->srcset());
@@ -84,8 +84,6 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
         $srcset = $image->srcset();
 
         $this->assertNotEmpty($srcset);
-        $this->assertContains('/img/image-384.jpeg', $srcset);
-        $this->assertContains('/img/image-1152.jpeg', $srcset);
     }
 
     public function test_create_sets_default_srcset() {
@@ -95,6 +93,6 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
 
         $srcset = $image->srcset();
 
-        $this->assertContains('/img/image.jpeg 1920w', $srcset);
+        $this->assertContains('/img/image-1920.jpeg 1920w', $srcset);
     }
 }

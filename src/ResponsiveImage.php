@@ -21,6 +21,21 @@ class ResponsiveImage
     private $sizes = [];
 
     /**
+     * @var string
+     */
+    private $fileName = '';
+
+    /**
+     * @var string
+     */
+    private $extension = '';
+
+    /**
+     * @var string
+     */
+    private $urlPath = '';
+
+    /**
      * ResponsiveImage constructor.
      *
      * @param      $src
@@ -113,6 +128,62 @@ class ResponsiveImage
         }
 
         return implode(', ', $sizes);
+    }
+
+    /**
+     * @return string
+     */
+    public function getFileName() {
+        return $this->fileName;
+    }
+
+    /**
+     * @param string $fileName
+     */
+    public function setFileName($fileName) {
+        $this->fileName = $fileName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getExtension() {
+        return $this->extension;
+    }
+
+    /**
+     * @param string $extension
+     */
+    public function setExtension($extension) {
+        $this->extension = $extension;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUrlPath() {
+        return $this->urlPath;
+    }
+
+    /**
+     * @param string $urlPath
+     */
+    public function setUrlPath($urlPath) {
+        $this->urlPath = $urlPath;
+    }
+
+    /**
+     * @return \string[]
+     */
+    public function getSrcset() {
+        return $this->srcset;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSrc() {
+        return $this->src;
     }
 
 }
