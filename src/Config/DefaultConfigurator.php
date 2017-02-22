@@ -22,7 +22,7 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
         'sourcePath'   => './',
         'enableCache'  => false,
         'stepModifier' => 0.5,
-        'minFileSize'  => 10000,
+        'minFileSize'  => 5000,
         'minWidth'     => 150,
         'scaler'       => 'filesize',
     ];

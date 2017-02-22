@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2
+
+- Improve caching, scalers are now not used when images are already cached.
+
 ## 1.1
 
 - Add Scaler support
