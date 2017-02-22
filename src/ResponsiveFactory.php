@@ -93,18 +93,9 @@ class ResponsiveFactory
             throw new FileNotFoundException("{$this->sourcePath}{$src}");
         }
 
-        $publicImagePath = "{$this->publicPath}/{$src}";
-
-        if (!$this->enableCache || !$this->fs->exists($publicImagePath)) {
-            if ($this->fs->exists($publicImagePath)) {
-                $this->fs->remove($publicImagePath);
-            }
-
-            $this->fs->dumpFile($publicImagePath, $sourceImage->getContents());
-        }
-
         $extension = $sourceImage->getExtension();
         $fileName = str_replace(".{$extension}", '', $sourceImage->getFilename());
+        $publicImagePath = "{$this->publicPath}/{$src}";
 
         $urlParts = explode('/', $src);
         array_pop($urlParts);
@@ -113,6 +104,26 @@ class ResponsiveFactory
         $responsiveImage->setExtension($extension);
         $responsiveImage->setFileName($fileName);
         $responsiveImage->setUrlPath($urlPath);
+
+        if ($this->enableCache && $this->fs->exists($publicImagePath)) {
+            /** @var SplFileInfo[] $cachedFiles */
+            $cachedFiles = Finder::create()->files()->in($sourceImage->getRelativePath())->name("{$fileName}-*.{$extension}");
+
+            foreach ($cachedFiles as $cachedFile) {
+                $cachedFilename = $cachedFile->getFilename();
+                $size = (int) str_replace(".{$extension}", '', str_replace("{$fileName}-", '', $cachedFilename));
+
+                $responsiveImage->addSource("{$urlPath}/{$cachedFilename}", $size);
+            }
+
+            return $responsiveImage;
+        }
+
+        if ($this->fs->exists($publicImagePath)) {
+            $this->fs->remove($publicImagePath);
+        }
+
+        $this->fs->dumpFile($publicImagePath, $sourceImage->getContents());
 
         $imageObject = $this->engine->make($sourceImage->getPathname());
         $width = $imageObject->getWidth();
