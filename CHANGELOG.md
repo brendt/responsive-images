@@ -3,6 +3,7 @@
 ## 1.1.2
 
 - Improve caching, scalers are now not used when images are already cached.
+- Set default minFileSize to 5 KB.
 
 ## 1.1
 
