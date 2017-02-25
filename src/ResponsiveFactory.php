@@ -125,7 +125,7 @@ class ResponsiveFactory
 
         if ($this->enableCache && $this->fs->exists($publicImagePath)) {
             /** @var SplFileInfo[] $cachedFiles */
-            $cachedFiles = Finder::create()->files()->in($sourceImage->getRelativePath())->name("{$fileName}-*.{$extension}");
+            $cachedFiles = Finder::create()->files()->in("{$this->publicPath}/{$sourceImage->getRelativePath()}")->name("{$fileName}-*.{$extension}");
 
             foreach ($cachedFiles as $cachedFile) {
                 $cachedFilename = $cachedFile->getFilename();
