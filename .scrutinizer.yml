@@ -5,7 +5,7 @@ build:
     tests:
         override:
             -
-                command: 'phpunit'
+                command: 'vendor/bin/phpunit'
 checks:
     php:
         code_rating: true
