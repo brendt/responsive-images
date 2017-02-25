@@ -5,6 +5,8 @@ namespace Brendt\Image;
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
 use Brendt\Image\Exception\FileNotFoundException;
 use Brendt\Image\Scaler\Scaler;
+use ImageOptimizer\Optimizer;
+use ImageOptimizer\OptimizerFactory;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 use Symfony\Component\Filesystem\Filesystem;
@@ -68,19 +70,27 @@ class ResponsiveFactory
     protected $scaler;
 
     /**
+     * @var Optimizer
+     */
+    protected $optimizer;
+
+    /**
      * ResponsiveFactory constructor.
      *
      * @param ResponsiveFactoryConfigurator $configurator
      */
     public function __construct(ResponsiveFactoryConfigurator $configurator) {
         $configurator->configure($this);
+
         $this->sourcePath = rtrim($this->sourcePath, '/');
         $this->publicPath = rtrim($this->publicPath, '/');
+
         $this->engine = new ImageManager([
             'driver' => $this->driver,
         ]);
-
+        $this->optimizer = (new OptimizerFactory())->get();
         $this->fs = new Filesystem();
+
         if (!$this->fs->exists($this->publicPath)) {
             $this->fs->mkdir($this->publicPath);
         }
@@ -138,9 +148,26 @@ class ResponsiveFactory
         $sizes = $this->scaler->scale($sourceImage, $imageObject);
         $this->createScaledImages($sizes, $imageObject, $responsiveImage);
 
+        if ($this->optimize) {
+            $this->optimizeResponsiveImage($responsiveImage);
+        }
+
         return $responsiveImage;
     }
 
+    /**
+     * Create scaled image files and add them as sources to a Responsive Image, based on an array of file sizes:
+     * [
+     *      width => height,
+     *      ...
+     * ]
+     *
+     * @param array           $sizes
+     * @param Image           $imageObject
+     * @param ResponsiveImage $responsiveImage
+     *
+     * @return ResponsiveImage
+     */
     private function createScaledImages(array $sizes, Image $imageObject, ResponsiveImage $responsiveImage) : ResponsiveImage {
         $urlPath = $responsiveImage->getUrlPath();
 
@@ -156,6 +183,27 @@ class ResponsiveFactory
         return $responsiveImage;
     }
 
+    /**
+     * Optimize all sources of a Responsive Image
+     *
+     * @param ResponsiveImage $responsiveImage
+     *
+     * @return ResponsiveImage
+     */
+    private function optimizeResponsiveImage(ResponsiveImage $responsiveImage) : ResponsiveImage {
+        foreach ($responsiveImage->getSrcset() as $imageFile) {
+            $this->optimizer->optimize("{$this->publicPath}/{$imageFile}");
+        }
+
+        return $responsiveImage;
+    }
+
+    /**
+     * Save the image file contents to a path
+     *
+     * @param string $path
+     * @param string $image
+     */
     private function saveImageFile(string $path, string $image) {
         if (!$this->enableCache || !$this->fs->exists($path)) {
             $this->fs->dumpFile($path, $image);
