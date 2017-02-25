@@ -26,20 +26,6 @@ interface Scaler
     public function scale(SplFileInfo $sourceFile, Image $imageObject) : array;
 
     /**
-     * @param $sourcePath
-     *
-     * @return mixed
-     */
-    public function setSourcePath($sourcePath);
-
-    /**
-     * @param $publicPath
-     *
-     * @return mixed
-     */
-    public function setPublicPath($publicPath);
-
-    /**
      * @param $minFileSize
      *
      * @return mixed
@@ -59,13 +45,6 @@ interface Scaler
      * @return mixed
      */
     public function setStepModifier($stepModifier);
-
-    /**
-     * @param $enableCache
-     *
-     * @return mixed
-     */
-    public function setEnableCache($enableCache);
 
 
 }
