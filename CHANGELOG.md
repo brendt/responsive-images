@@ -1,11 +1,17 @@
 # Changelog
 
+## 1.2.0
+
+- Update minimum requirements to PHP 7.1.
+- Refactor scalers to only calculate file sizes and not handle image saving.
+- Add `optimize` parameter to run image optimizers. Defaults to `false`.
+
 ## 1.1.2
 
 - Improve caching, scalers are now not used when images are already cached.
-- Set default minFileSize to 5 KB.
+- Set default `minFileSize` to 5 KB.
 
-## 1.1
+## 1.1.0
 
 - Add Scaler support
 - Add FileSize scaler as default.
@@ -29,6 +35,6 @@ $factory = new ResponsiveFactory(new DefaultConfigurator([
 
 **Note**: the `stepModifier` parameter is now used different, the higher this modifier, the more images will be generated.
 
-## 1.0
+## 1.0.0
 
 - Use PSR naming standards.

@@ -11,6 +11,7 @@ use Brendt\Image\Scaler\WidthScaler;
 
 class DefaultConfigurator implements ResponsiveFactoryConfigurator
 {
+
     /**
      * The default config
      *
@@ -21,10 +22,11 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
         'publicPath'   => './',
         'sourcePath'   => './',
         'enableCache'  => false,
+        'optimize'     => false,
+        'scaler'       => 'filesize',
         'stepModifier' => 0.5,
         'minFileSize'  => 5000,
         'minWidth'     => 150,
-        'scaler'       => 'filesize',
     ];
 
     /**
@@ -64,6 +66,7 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
             ->setPublicPath($this->config['publicPath'])
             ->setSourcePath($this->config['sourcePath'])
             ->setEnableCache($this->config['enableCache'])
+            ->setOptimize($this->config['optimize'])
             ->setScaler($scaler);
     }
 
@@ -74,9 +77,6 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
      */
     public function configureScaler(Scaler $scaler) {
         $scaler
-            ->setEnableCache($this->config['enableCache'])
-            ->setSourcePath($this->config['sourcePath'])
-            ->setPublicPath($this->config['publicPath'])
             ->setMinFileSize($this->config['minFileSize'])
             ->setMinWidth($this->config['minWidth'])
             ->setStepModifier($this->config['stepModifier']);

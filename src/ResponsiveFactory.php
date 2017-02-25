@@ -5,6 +5,9 @@ namespace Brendt\Image;
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
 use Brendt\Image\Exception\FileNotFoundException;
 use Brendt\Image\Scaler\Scaler;
+use ImageOptimizer\Optimizer;
+use ImageOptimizer\OptimizerFactory;
+use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -43,6 +46,13 @@ class ResponsiveFactory
     private $enableCache;
 
     /**
+     * Enable optimizers will run several image optimizers on the saved files.
+     *
+     * @var bool
+     */
+    private $optimize;
+
+    /**
      * The Intervention image engine.
      *
      * @var ImageManager
@@ -60,19 +70,27 @@ class ResponsiveFactory
     protected $scaler;
 
     /**
+     * @var Optimizer
+     */
+    protected $optimizer;
+
+    /**
      * ResponsiveFactory constructor.
      *
      * @param ResponsiveFactoryConfigurator $configurator
      */
     public function __construct(ResponsiveFactoryConfigurator $configurator) {
         $configurator->configure($this);
+
         $this->sourcePath = rtrim($this->sourcePath, '/');
         $this->publicPath = rtrim($this->publicPath, '/');
+
         $this->engine = new ImageManager([
             'driver' => $this->driver,
         ]);
-
+        $this->optimizer = (new OptimizerFactory())->get();
         $this->fs = new Filesystem();
+
         if (!$this->fs->exists($this->publicPath)) {
             $this->fs->mkdir($this->publicPath);
         }
@@ -84,7 +102,7 @@ class ResponsiveFactory
      * @return ResponsiveImage
      * @throws FileNotFoundException
      */
-    public function create($src) {
+    public function create($src) : ResponsiveImage {
         $responsiveImage = new ResponsiveImage($src);
         $src = $responsiveImage->src();
         $sourceImage = $this->getImageFile($this->sourcePath, $src);
@@ -119,19 +137,77 @@ class ResponsiveFactory
             return $responsiveImage;
         }
 
-        if ($this->fs->exists($publicImagePath)) {
-            $this->fs->remove($publicImagePath);
+        if (!$this->enableCache || !$this->fs->exists($publicImagePath)) {
+            $this->fs->dumpFile($publicImagePath, $sourceImage->getContents());
         }
-
-        $this->fs->dumpFile($publicImagePath, $sourceImage->getContents());
 
         $imageObject = $this->engine->make($sourceImage->getPathname());
         $width = $imageObject->getWidth();
         $responsiveImage->addSource($src, $width);
 
-        $responsiveImage = $this->scaler->scale($responsiveImage, $imageObject);
+        $sizes = $this->scaler->scale($sourceImage, $imageObject);
+        $this->createScaledImages($sizes, $imageObject, $responsiveImage);
+
+        if ($this->optimize) {
+            $this->optimizeResponsiveImage($responsiveImage);
+        }
 
         return $responsiveImage;
+    }
+
+    /**
+     * Create scaled image files and add them as sources to a Responsive Image, based on an array of file sizes:
+     * [
+     *      width => height,
+     *      ...
+     * ]
+     *
+     * @param array           $sizes
+     * @param Image           $imageObject
+     * @param ResponsiveImage $responsiveImage
+     *
+     * @return ResponsiveImage
+     */
+    private function createScaledImages(array $sizes, Image $imageObject, ResponsiveImage $responsiveImage) : ResponsiveImage {
+        $urlPath = $responsiveImage->getUrlPath();
+
+        foreach ($sizes as $width => $height) {
+            $scaledFileSrc = "{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}";
+            $scaledFilePath = "{$this->publicPath}/{$scaledFileSrc}";
+            $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
+
+            $this->saveImageFile($scaledFilePath, $scaledImage);
+            $responsiveImage->addSource($scaledFileSrc, $width);
+        }
+
+        return $responsiveImage;
+    }
+
+    /**
+     * Optimize all sources of a Responsive Image
+     *
+     * @param ResponsiveImage $responsiveImage
+     *
+     * @return ResponsiveImage
+     */
+    private function optimizeResponsiveImage(ResponsiveImage $responsiveImage) : ResponsiveImage {
+        foreach ($responsiveImage->getSrcset() as $imageFile) {
+            $this->optimizer->optimize("{$this->publicPath}/{$imageFile}");
+        }
+
+        return $responsiveImage;
+    }
+
+    /**
+     * Save the image file contents to a path
+     *
+     * @param string $path
+     * @param string $image
+     */
+    private function saveImageFile(string $path, string $image) {
+        if (!$this->enableCache || !$this->fs->exists($path)) {
+            $this->fs->dumpFile($path, $image);
+        }
     }
 
     /**
@@ -140,7 +216,7 @@ class ResponsiveFactory
      *
      * @return SplFileInfo
      */
-    private function getImageFile($directory, $path) {
+    private function getImageFile(string $directory, string $path) : SplFileInfo {
         $iterator = Finder::create()->files()->in($directory)->path(ltrim($path, '/'))->getIterator();
         $iterator->rewind();
 
@@ -152,7 +228,7 @@ class ResponsiveFactory
      *
      * @return ResponsiveFactory
      */
-    public function setDriver($driver) {
+    public function setDriver($driver) : ResponsiveFactory {
         $this->driver = $driver;
 
         return $this;
@@ -163,7 +239,7 @@ class ResponsiveFactory
      *
      * @return ResponsiveFactory
      */
-    public function setPublicPath($publicPath) {
+    public function setPublicPath($publicPath) : ResponsiveFactory {
         $this->publicPath = $publicPath;
 
         return $this;
@@ -174,7 +250,7 @@ class ResponsiveFactory
      *
      * @return ResponsiveFactory
      */
-    public function setEnableCache($enableCache) {
+    public function setEnableCache($enableCache) : ResponsiveFactory {
         $this->enableCache = $enableCache;
 
         return $this;
@@ -185,7 +261,7 @@ class ResponsiveFactory
      *
      * @return ResponsiveFactory
      */
-    public function setSourcePath($sourcePath) {
+    public function setSourcePath($sourcePath) : ResponsiveFactory {
         $this->sourcePath = $sourcePath;
 
         return $this;
@@ -193,9 +269,24 @@ class ResponsiveFactory
 
     /**
      * @param Scaler $scaler
+     *
+     * @return ResponsiveFactory
      */
-    public function setScaler($scaler) {
+    public function setScaler($scaler) : ResponsiveFactory {
         $this->scaler = $scaler;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $optimize
+     *
+     * @return ResponsiveFactory
+     */
+    public function setOptimize(bool $optimize) : ResponsiveFactory {
+        $this->optimize = $optimize;
+
+        return $this;
     }
 
 }

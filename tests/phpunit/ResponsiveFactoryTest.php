@@ -6,6 +6,8 @@ use Brendt\Image\Config\DefaultConfigurator;
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
 use Brendt\Image\ResponsiveFactory;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -93,6 +95,36 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
 
         $srcset = $image->srcset();
 
-        $this->assertContains('/img/image-1920.jpeg 1920w', $srcset);
+        $this->assertContains('/img/image.jpeg 1920w', $srcset);
+    }
+
+    public function test_optimizer() {
+        $url = 'img/image.jpeg';
+
+        $normalFactory = new ResponsiveFactory($this->configurator);
+        $optimizedFactory = new ResponsiveFactory(new DefaultConfigurator([
+            'publicPath'   => $this->publicPath,
+            'engine'       => 'gd',
+            'stepModifier' => 0.5,
+            'scaler'       => 'width',
+            'optimize'     => true,
+            'enableCache'  => false,
+        ]));
+
+        $normalImage = $normalFactory->create($url);
+        $normalImageFiles = Finder::create()->files()->in($this->publicPath)->path(trim($normalImage->getSrc(), '/'))->getIterator();
+        $normalImageFiles->rewind();
+        /** @var SplFileInfo $normalImageFile */
+        $normalImageFile = $normalImageFiles->current();
+        $normalImageFileSize = $normalImageFile->getSize();
+
+        $optimizedImage = $optimizedFactory->create($url);
+        $optimizedImageFiles = Finder::create()->files()->in($this->publicPath)->path(trim($optimizedImage->getSrc(), '/'))->getIterator();
+        $optimizedImageFiles->rewind();
+        /** @var SplFileInfo $optimizedImageFile */
+        $optimizedImageFile = $optimizedImageFiles->current();
+        $optimizedImageFileSize = $optimizedImageFile->getSize();
+
+        $this->assertTrue($optimizedImageFileSize <= $normalImageFileSize);
     }
 }
