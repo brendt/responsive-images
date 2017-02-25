@@ -125,6 +125,6 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
         $optimizedImageFile = $optimizedImageFiles->current();
         $optimizedImageFileSize = $optimizedImageFile->getSize();
 
-        $this->assertTrue($optimizedImageFile->getSize() <= $normalImageFile->getSize());
+        $this->assertTrue($optimizedImageFileSize <= $normalImageFileSize);
     }
 }
