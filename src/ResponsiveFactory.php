@@ -44,6 +44,13 @@ class ResponsiveFactory
     private $enableCache;
 
     /**
+     * Enable optimizers will run several image optimizers on the saved files.
+     *
+     * @var bool
+     */
+    private $optimize;
+
+    /**
      * The Intervention image engine.
      *
      * @var ImageManager
@@ -219,6 +226,17 @@ class ResponsiveFactory
      */
     public function setScaler($scaler) : ResponsiveFactory {
         $this->scaler = $scaler;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $optimize
+     *
+     * @return ResponsiveFactory
+     */
+    public function setOptimize(bool $optimize) : ResponsiveFactory {
+        $this->optimize = $optimize;
 
         return $this;
     }

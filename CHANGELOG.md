@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+- Update minimum requirements to PHP 7.1.
+- Refactor scalers to only calculate file sizes and not handle image saving.
+- Add `optimize` parameter to run image optimizers.
+
 ## 1.1.2
 
 - Improve caching, scalers are now not used when images are already cached.
