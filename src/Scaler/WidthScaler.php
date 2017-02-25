@@ -4,40 +4,29 @@ namespace Brendt\Image\Scaler;
 
 use Brendt\Image\ResponsiveImage;
 use Intervention\Image\Image;
+use Symfony\Component\Finder\SplFileInfo;
 
 class WidthScaler extends AbstractScaler
 {
 
     /**
-     * @param ResponsiveImage $responsiveImage
-     * @param Image           $imageObject
+     * @param SplFileInfo $sourceFile
+     * @param Image       $imageObject
      *
-     * @return ResponsiveImage
+     * @return array
      */
-    public function scale(ResponsiveImage $responsiveImage, Image $imageObject) {
+    public function scale(SplFileInfo $sourceFile, Image $imageObject) : array {
         $width = $imageObject->getWidth();
         $height = $imageObject->getHeight();
-        $fileName = $responsiveImage->getFileName();
-        $extension = $responsiveImage->getExtension();
-        $urlPath = $responsiveImage->getUrlPath();
 
+        $sizes = [];
         while ($width >= $this->minWidth) {
-            $scaledName = "{$fileName}-{$width}.{$extension}";
-            $scaledSrc = "{$urlPath}/{$scaledName}";
-            $responsiveImage->addSource($scaledSrc, $width);
-
-            $publicScaledPath = "{$this->publicPath}/{$urlPath}/{$scaledName}";
-            if (!$this->enableCache || !$this->fs->exists($publicScaledPath)) {
-                $this->fs->dumpFile(
-                    $publicScaledPath,
-                    $imageObject->resize($width, $height)->encode($extension)
-                );
-            }
-
             $width = floor($width * $this->stepModifier);
             $height = floor($height * $this->stepModifier);
+
+            $sizes[(int) $width] = $height;
         }
 
-        return $responsiveImage;
+        return $sizes;
     }
 }

@@ -8,6 +8,7 @@ use Brendt\Image\Scaler\WidthScaler;
 use Intervention\Image\ImageManager;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 class WidthScalerTest extends TestCase
 {
@@ -56,23 +57,21 @@ class WidthScalerTest extends TestCase
     }
 
     public function test_scale_down() {
-        $responsiveImage = $this->createResponsiveImage();
+        $sourceFile = $this->createSourceFile();
         $imageObject = $this->createImageObject();
 
-        $responsiveImage = $this->scaler->scale($responsiveImage, $imageObject);
+        $sizes = $this->scaler->scale($sourceFile, $imageObject);
 
-        $this->assertTrue(count($responsiveImage->getSrcset()) > 1);
+        $this->assertTrue(count($sizes) > 1);
     }
 
     // TODO: test algorithm
 
-    private function createResponsiveImage() {
-        $responsiveImage = new ResponsiveImage('img/image.jpeg');
-        $responsiveImage->setExtension('jpeg');
-        $responsiveImage->setFileName('image');
-        $responsiveImage->setUrlPath('/img');
-        
-        return $responsiveImage;
+    private function createSourceFile() {
+        $sourceFiles = Finder::create()->files()->in('./tests/img')->name('image.jpeg')->getIterator();
+        $sourceFiles->rewind();
+
+        return $sourceFiles->current();
     }
 
     private function createImageObject() {

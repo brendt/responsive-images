@@ -5,6 +5,7 @@ namespace Brendt\Image;
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
 use Brendt\Image\Exception\FileNotFoundException;
 use Brendt\Image\Scaler\Scaler;
+use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -84,7 +85,7 @@ class ResponsiveFactory
      * @return ResponsiveImage
      * @throws FileNotFoundException
      */
-    public function create($src) {
+    public function create($src) : ResponsiveImage {
         $responsiveImage = new ResponsiveImage($src);
         $src = $responsiveImage->src();
         $sourceImage = $this->getImageFile($this->sourcePath, $src);
@@ -119,19 +120,39 @@ class ResponsiveFactory
             return $responsiveImage;
         }
 
-        if ($this->fs->exists($publicImagePath)) {
-            $this->fs->remove($publicImagePath);
+        if (!$this->enableCache || !$this->fs->exists($publicImagePath)) {
+            $this->fs->dumpFile($publicImagePath, $sourceImage->getContents());
         }
-
-        $this->fs->dumpFile($publicImagePath, $sourceImage->getContents());
 
         $imageObject = $this->engine->make($sourceImage->getPathname());
         $width = $imageObject->getWidth();
         $responsiveImage->addSource($src, $width);
 
-        $responsiveImage = $this->scaler->scale($responsiveImage, $imageObject);
+        $sizes = $this->scaler->scale($sourceImage, $imageObject);
+        $this->createScaledImages($sizes, $imageObject, $responsiveImage);
 
         return $responsiveImage;
+    }
+
+    private function createScaledImages(array $sizes, Image $imageObject, ResponsiveImage $responsiveImage) : ResponsiveImage {
+        $urlPath = $responsiveImage->getUrlPath();
+
+        foreach ($sizes as $width => $height) {
+            $scaledFileSrc = "{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}";
+            $scaledFilePath = "{$this->publicPath}/{$scaledFileSrc}";
+            $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
+
+            $this->saveImageFile($scaledFilePath, $scaledImage);
+            $responsiveImage->addSource($scaledFileSrc, $width);
+        }
+
+        return $responsiveImage;
+    }
+
+    private function saveImageFile(string $path, string $image) {
+        if (!$this->enableCache || !$this->fs->exists($path)) {
+            $this->fs->dumpFile($path, $image);
+        }
     }
 
     /**
@@ -140,7 +161,7 @@ class ResponsiveFactory
      *
      * @return SplFileInfo
      */
-    private function getImageFile($directory, $path) {
+    private function getImageFile(string $directory, string $path) : SplFileInfo {
         $iterator = Finder::create()->files()->in($directory)->path(ltrim($path, '/'))->getIterator();
         $iterator->rewind();
 
@@ -152,7 +173,7 @@ class ResponsiveFactory
      *
      * @return ResponsiveFactory
      */
-    public function setDriver($driver) {
+    public function setDriver($driver) : ResponsiveFactory {
         $this->driver = $driver;
 
         return $this;
@@ -163,7 +184,7 @@ class ResponsiveFactory
      *
      * @return ResponsiveFactory
      */
-    public function setPublicPath($publicPath) {
+    public function setPublicPath($publicPath) : ResponsiveFactory {
         $this->publicPath = $publicPath;
 
         return $this;
@@ -174,7 +195,7 @@ class ResponsiveFactory
      *
      * @return ResponsiveFactory
      */
-    public function setEnableCache($enableCache) {
+    public function setEnableCache($enableCache) : ResponsiveFactory {
         $this->enableCache = $enableCache;
 
         return $this;
@@ -185,7 +206,7 @@ class ResponsiveFactory
      *
      * @return ResponsiveFactory
      */
-    public function setSourcePath($sourcePath) {
+    public function setSourcePath($sourcePath) : ResponsiveFactory {
         $this->sourcePath = $sourcePath;
 
         return $this;
@@ -193,9 +214,13 @@ class ResponsiveFactory
 
     /**
      * @param Scaler $scaler
+     *
+     * @return ResponsiveFactory
      */
-    public function setScaler($scaler) {
+    public function setScaler($scaler) : ResponsiveFactory {
         $this->scaler = $scaler;
+
+        return $this;
     }
 
 }

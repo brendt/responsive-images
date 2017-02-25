@@ -5,6 +5,7 @@ namespace Brendt\Image\Scaler;
 use Brendt\Image\Config\DefaultConfigurator;
 use Brendt\Image\ResponsiveImage;
 use Intervention\Image\Image;
+use Symfony\Component\Finder\SplFileInfo;
 
 interface Scaler
 {
@@ -17,12 +18,12 @@ interface Scaler
     public function __construct(DefaultConfigurator $configurator);
 
     /**
-     * @param ResponsiveImage $responsiveImage
-     * @param Image           $imageObject
+     * @param SplFileInfo $sourceFile
+     * @param Image       $imageObject
      *
-     * @return ResponsiveImage
+     * @return array
      */
-    public function scale(ResponsiveImage $responsiveImage, Image $imageObject);
+    public function scale(SplFileInfo $sourceFile, Image $imageObject) : array;
 
     /**
      * @param $sourcePath
