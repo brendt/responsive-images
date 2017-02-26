@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.2
+
+- Add simple construct for the ResponsiveFactory.
+
+## 1.2.1
+
+- Fixed bug with the cache not being searched in the public path.
+
 ## 1.2.0
 
 - Update minimum requirements to PHP 7.1.
