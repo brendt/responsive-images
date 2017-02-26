@@ -2,6 +2,7 @@
 
 namespace Brendt\Image;
 
+use Brendt\Image\Config\DefaultConfigurator;
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
 use Brendt\Image\Exception\FileNotFoundException;
 use Brendt\Image\Scaler\Scaler;
@@ -79,7 +80,8 @@ class ResponsiveFactory
      *
      * @param ResponsiveFactoryConfigurator $configurator
      */
-    public function __construct(ResponsiveFactoryConfigurator $configurator) {
+    public function __construct(ResponsiveFactoryConfigurator $configurator = null) {
+        $configurator = $configurator ?? new DefaultConfigurator();
         $configurator->configure($this);
 
         $this->sourcePath = rtrim($this->sourcePath, '/');

@@ -52,6 +52,10 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
         ]);
     }
 
+    public function test_simple_construct() {
+        new ResponsiveFactory();
+    }
+
     public function test_create() {
         $factory = new ResponsiveFactory($this->configurator);
         $image = $factory->create('img/image.jpeg');
