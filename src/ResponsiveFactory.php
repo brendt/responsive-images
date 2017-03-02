@@ -2,6 +2,8 @@
 
 namespace Brendt\Image;
 
+use Amp\Parallel\Forking\Fork;
+use AsyncInterop\Promise;
 use Brendt\Image\Config\DefaultConfigurator;
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
 use Brendt\Image\Exception\FileNotFoundException;
@@ -54,6 +56,11 @@ class ResponsiveFactory
     private $optimize;
 
     /**
+     * @var bool
+     */
+    private $async;
+
+    /**
      * The Intervention image engine.
      *
      * @var ImageManager
@@ -74,6 +81,11 @@ class ResponsiveFactory
      * @var Optimizer
      */
     protected $optimizer;
+
+    /**
+     * @var Promise[]
+     */
+    protected $promises;
 
     /**
      * ResponsiveFactory constructor.
@@ -158,6 +170,22 @@ class ResponsiveFactory
     }
 
     /**
+     * @return Promise
+     */
+    public function getPromise() : Promise {
+        return \Amp\all($this->promises);
+    }
+
+    /**
+     * @param callable $callback
+     *
+     * @return mixed
+     */
+    public function done(callable $callback) {
+        return $this->getPromise()->when($callback);
+    }
+
+    /**
      * Create scaled image files and add them as sources to a Responsive Image, based on an array of file sizes:
      * [
      *      width => height,
@@ -172,17 +200,54 @@ class ResponsiveFactory
      */
     private function createScaledImages(array $sizes, Image $imageObject, ResponsiveImage $responsiveImage) : ResponsiveImage {
         $urlPath = $responsiveImage->getUrlPath();
+        $promises = [];
 
         foreach ($sizes as $width => $height) {
             $scaledFileSrc = "{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}";
             $scaledFilePath = "{$this->publicPath}/{$scaledFileSrc}";
-            $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
 
-            $this->saveImageFile($scaledFilePath, $scaledImage);
+            if ($this->async && Fork::supported()) {
+                $promises[] = Fork::spawn([$this, 'scaleImage'], [$scaledFilePath, $imageObject, $width, $height])->join();
+            } else {
+                $this->scaleImage($scaledFilePath, $imageObject, $width, $height);
+            }
+
             $responsiveImage->addSource($scaledFileSrc, $width);
         }
 
+        $this->promises[$responsiveImage->src()] = \Amp\all($promises);
+
         return $responsiveImage;
+    }
+
+    /**
+     * Scale an image and save it.
+     *
+     * @param string $path
+     * @param Image  $imageObject
+     * @param        $width
+     * @param        $height
+     *
+     * @return Image
+     */
+    private function scaleImage(string $path, Image $imageObject, $width, $height) : Image {
+        $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
+
+        $this->saveImageFile($path, $scaledImage);
+
+        return $scaledImage;
+    }
+
+    /**
+     * Save the image file contents to a path
+     *
+     * @param string $path
+     * @param string $image
+     */
+    private function saveImageFile(string $path, string $image) {
+        if (!$this->enableCache || !$this->fs->exists($path)) {
+            $this->fs->dumpFile($path, $image);
+        }
     }
 
     /**
@@ -198,18 +263,6 @@ class ResponsiveFactory
         }
 
         return $responsiveImage;
-    }
-
-    /**
-     * Save the image file contents to a path
-     *
-     * @param string $path
-     * @param string $image
-     */
-    private function saveImageFile(string $path, string $image) {
-        if (!$this->enableCache || !$this->fs->exists($path)) {
-            $this->fs->dumpFile($path, $image);
-        }
     }
 
     /**
@@ -287,6 +340,17 @@ class ResponsiveFactory
      */
     public function setOptimize(bool $optimize) : ResponsiveFactory {
         $this->optimize = $optimize;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $async
+     *
+     * @return ResponsiveFactory
+     */
+    public function setAsync(bool $async) : ResponsiveFactory {
+        $this->async = $async;
 
         return $this;
     }
