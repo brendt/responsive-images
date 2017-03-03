@@ -87,7 +87,7 @@ You'll have to change two things in your code when rendering images asynchronous
 
 ```php
 $factory = new ResponsiveFactory(new DefaultConfigurator([
-    'async'        => true,
+    'async' => true,
 ]));
 
 $responsiveImage = $factory->create($url);
