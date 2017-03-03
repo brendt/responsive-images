@@ -161,6 +161,6 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
             }
         });
 
-        \Amp\wait($responsiveImage->getMainPromise());
+        \Amp\wait($responsiveImage->getPromise());
     }
 }

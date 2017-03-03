@@ -37,8 +37,10 @@ class ResponsiveImage
      */
     private $urlPath = '';
 
-
-    private $promises;
+    /**
+     * @var Promise
+     */
+    private $promise;
 
     /**
      * ResponsiveImage constructor.
@@ -51,20 +53,26 @@ class ResponsiveImage
         $this->src = "/{$src}";
     }
 
-    public function onSaved(callable $callback) : ResponsiveImage{
-        $this->getMainPromise()->when($callback);
+    public function onSaved(callable $callback) : ResponsiveImage {
+        if (!$this->promise) {
+            $callback();
+
+            return $this;
+        }
+
+        $this->promise->when($callback);
 
         return $this;
     }
 
-    public function addPromise(Promise $promise) : ResponsiveImage {
-        $this->promises[] = $promise;
+    public function setPromise(Promise $promise) : ResponsiveImage {
+        $this->promise = $promise;
 
         return $this;
     }
 
-    public function getMainPromise() : Promise {
-        return \Amp\all($this->promises);
+    public function getPromise() : ?Promise {
+        return $this->promise;
     }
 
     /**
@@ -205,13 +213,6 @@ class ResponsiveImage
      */
     public function getSrc() {
         return $this->src;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPromises() {
-        return $this->promises;
     }
 
 }

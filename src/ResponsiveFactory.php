@@ -12,7 +12,6 @@ use ImageOptimizer\Optimizer;
 use ImageOptimizer\OptimizerFactory;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
-use React\Promise\Deferred;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -181,40 +180,42 @@ class ResponsiveFactory
      * @param Image           $imageObject
      * @param ResponsiveImage $responsiveImage
      *
-     * @return Promise
+     * @return ResponsiveImage
      */
-    public function createScaledImages(array $sizes, Image $imageObject, ResponsiveImage $responsiveImage) {
+    public function createScaledImages(array $sizes, Image $imageObject, ResponsiveImage $responsiveImage) : ResponsiveImage {
         $urlPath = $responsiveImage->getUrlPath();
+
+        if ($this->async && Fork::supported()) {
+            $factory = $this;
+
+            $fork = Fork::spawn(function () use ($factory, $imageObject, $urlPath, $sizes, $responsiveImage) {
+                foreach ($sizes as $width => $height) {
+                    $scaledFileSrc = trim("{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}", '/');
+                    $scaledFilePath = "{$factory->getPublicPath()}/{$scaledFileSrc}";
+
+                    $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
+                    $factory->saveImageFile($scaledFilePath, $scaledImage);
+                }
+            });
+
+            $responsiveImage->setPromise($fork->join());
+        }
 
         foreach ($sizes as $width => $height) {
             $scaledFileSrc = trim("{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}", '/');
             $scaledFilePath = "{$this->publicPath}/{$scaledFileSrc}";
 
-            $promise = $this->createScaleProcess($imageObject, $width, $height, $scaledFilePath);
-
-            if ($promise) {
-                $responsiveImage->addPromise($promise);
-            }
-
             $responsiveImage->addSource($scaledFileSrc, $width);
+
+            if (!$this->async) {
+                $deferred = new \Amp\Deferred();
+                $responsiveImage->setPromise($deferred->promise());
+                $deferred->resolve();
+                $this->scaleImage($scaledFilePath, $imageObject, $width, $height);
+            }
         }
-    }
 
-    private function createScaleProcess(Image $imageObject, $width, $height, $scaledFilePath) {
-        if ($this->async) {
-            $factory = $this;
-
-            $promise = Fork::spawn(function () use ($factory, $imageObject, $width, $height, $scaledFilePath) {
-                $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
-                $factory->saveImageFile($scaledFilePath, $scaledImage);
-            })->join();
-
-            return $promise;
-        } else {
-            $this->scaleImage($scaledFilePath, $imageObject, $width, $height);
-
-            return false;
-        }
+        return $responsiveImage;
     }
 
     /**
@@ -350,6 +351,13 @@ class ResponsiveFactory
         $this->async = $async;
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPublicPath() : string {
+        return $this->publicPath;
     }
 
 }
