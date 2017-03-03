@@ -35,7 +35,7 @@ This sample would generate something like:
 
 ## Configuration
 
-The `ResponsiveFactory` requires a `ResponsiveFactoryConfigurator` object which will set the needed parameters. 
+The `ResponsiveFactory` can take a `ResponsiveFactoryConfigurator` object which will set the needed parameters. 
 A default configurator `DefaultConfigurator` is provider out of the box, and uses the following parameters:
  
 ```php
@@ -45,7 +45,7 @@ A default configurator `DefaultConfigurator` is provider out of the box, and use
     'sourcePath'   => './',
     'enableCache'  => false,
     'optimize'     => false, 
-    'async'     => false,
+    'async'        => false,
     'scaler'       => 'filesize',
     'stepModifier' => 0.5,
     'minFileSize'  => 10000,
