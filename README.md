@@ -122,7 +122,7 @@ The benefit of this approach is that you can do other things instead of having t
 ### Paths
 
 The `sourcePath` parameter is used to define where image source files are located. 
-In case of the first example and above configuration, the image file should be save in `./src/img/image.jpeg`.
+In case of the first example and above configuration, the image file should be saved in `./src/img/image.jpeg`.
 
 The `publicPath` parameter is used to save rendered images into. This path should be the public directory of your website.
 The above example would render images into `./public/img/image.jpeg`. 
