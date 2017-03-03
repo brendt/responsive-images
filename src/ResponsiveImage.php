@@ -53,28 +53,6 @@ class ResponsiveImage
         $this->src = "/{$src}";
     }
 
-    public function onSaved(callable $callback) : ResponsiveImage {
-        if (!$this->promise) {
-            $callback();
-
-            return $this;
-        }
-
-        $this->promise->when($callback);
-
-        return $this;
-    }
-
-    public function setPromise(Promise $promise) : ResponsiveImage {
-        $this->promise = $promise;
-
-        return $this;
-    }
-
-    public function getPromise() : ?Promise {
-        return $this->promise;
-    }
-
     /**
      * @return string
      */
@@ -157,6 +135,47 @@ class ResponsiveImage
         }
 
         return implode(', ', $sizes);
+    }
+
+    /**
+     * Add a callback for when all image variants of this Responsive image are scaled and saved as files.
+     *
+     * @param callable $callback
+     *
+     * @return ResponsiveImage
+     */
+    public function onSave(callable $callback) : ResponsiveImage {
+        if (!$this->promise) {
+            $callback();
+
+            return $this;
+        }
+
+        $this->promise->when($callback);
+
+        return $this;
+    }
+
+    /**
+     * Sets the promise which determines when all files are scaled and saved.
+     *
+     * @param Promise $promise
+     *
+     * @return ResponsiveImage
+     */
+    public function setPromise(Promise $promise) : ResponsiveImage {
+        $this->promise = $promise;
+
+        return $this;
+    }
+
+    /**
+     * Get the promise which determines when all files are scaled and saved.
+     *
+     * @return Promise|null
+     */
+    public function getPromise() : ?Promise {
+        return $this->promise;
     }
 
     /**

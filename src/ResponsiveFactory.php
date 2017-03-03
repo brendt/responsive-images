@@ -156,15 +156,14 @@ class ResponsiveFactory
         }
 
         $imageObject = $this->engine->make($sourceImage->getPathname());
+
+        // TODO: This piece of code should be added as a size and not as a "default".
+        // It's because the WidthScaler skips the default size.
         $width = $imageObject->getWidth();
         $responsiveImage->addSource($src, $width);
 
         $sizes = $this->scaler->scale($sourceImage, $imageObject);
-        $this->createScaledImages($sizes, $imageObject, $responsiveImage);
-
-        if ($this->optimize) {
-            $this->optimizeResponsiveImage($responsiveImage);
-        }
+        $this->createScaledImages($imageObject, $responsiveImage, $sizes);
 
         return $responsiveImage;
     }
@@ -181,20 +180,28 @@ class ResponsiveFactory
      * @param ResponsiveImage $responsiveImage
      *
      * @return ResponsiveImage
+     *
+     * @TODO: refactor code duplication
      */
-    public function createScaledImages(array $sizes, Image $imageObject, ResponsiveImage $responsiveImage) : ResponsiveImage {
+    public function createScaledImages(Image $imageObject, ResponsiveImage $responsiveImage, array $sizes) : ResponsiveImage {
         $urlPath = $responsiveImage->getUrlPath();
+        $async = $this->async && Fork::supported();
 
-        if ($this->async && Fork::supported()) {
+        if ($async) {
             $factory = $this;
+            $optimize = $this->optimize;
 
-            $fork = Fork::spawn(function () use ($factory, $imageObject, $urlPath, $sizes, $responsiveImage) {
+            $fork = Fork::spawn(function () use ($factory, $imageObject, $responsiveImage, $sizes, $urlPath, $optimize) {
                 foreach ($sizes as $width => $height) {
                     $scaledFileSrc = trim("{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}", '/');
                     $scaledFilePath = "{$factory->getPublicPath()}/{$scaledFileSrc}";
 
                     $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
                     $factory->saveImageFile($scaledFilePath, $scaledImage);
+                }
+
+                if ($optimize) {
+                    $factory->optimizeResponsiveImage($responsiveImage);
                 }
             });
 
@@ -207,11 +214,16 @@ class ResponsiveFactory
 
             $responsiveImage->addSource($scaledFileSrc, $width);
 
-            if (!$this->async) {
+            if (!$async) {
                 $deferred = new \Amp\Deferred();
                 $responsiveImage->setPromise($deferred->promise());
                 $deferred->resolve();
+
                 $this->scaleImage($scaledFilePath, $imageObject, $width, $height);
+
+                if ($this->optimize) {
+                    $this->optimizeResponsiveImage($responsiveImage);
+                }
             }
         }
 
@@ -255,7 +267,7 @@ class ResponsiveFactory
      *
      * @return ResponsiveImage
      */
-    private function optimizeResponsiveImage(ResponsiveImage $responsiveImage) : ResponsiveImage {
+    public function optimizeResponsiveImage(ResponsiveImage $responsiveImage) : ResponsiveImage {
         foreach ($responsiveImage->getSrcset() as $imageFile) {
             $this->optimizer->optimize("{$this->publicPath}/{$imageFile}");
         }
