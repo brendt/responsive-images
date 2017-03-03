@@ -12,6 +12,7 @@ use ImageOptimizer\Optimizer;
 use ImageOptimizer\OptimizerFactory;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
+use React\Promise\Deferred;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -116,7 +117,7 @@ class ResponsiveFactory
      * @return ResponsiveImage
      * @throws FileNotFoundException
      */
-    public function create($src) : ResponsiveImage {
+    public function create($src) {
         $responsiveImage = new ResponsiveImage($src);
         $src = $responsiveImage->src();
         $sourceImage = $this->getImageFile($this->sourcePath, $src);
@@ -170,22 +171,6 @@ class ResponsiveFactory
     }
 
     /**
-     * @return Promise
-     */
-    public function getPromise() : Promise {
-        return \Amp\all($this->promises);
-    }
-
-    /**
-     * @param callable $callback
-     *
-     * @return mixed
-     */
-    public function done(callable $callback) {
-        return $this->getPromise()->when($callback);
-    }
-
-    /**
      * Create scaled image files and add them as sources to a Responsive Image, based on an array of file sizes:
      * [
      *      width => height,
@@ -196,28 +181,40 @@ class ResponsiveFactory
      * @param Image           $imageObject
      * @param ResponsiveImage $responsiveImage
      *
-     * @return ResponsiveImage
+     * @return Promise
      */
-    private function createScaledImages(array $sizes, Image $imageObject, ResponsiveImage $responsiveImage) : ResponsiveImage {
+    public function createScaledImages(array $sizes, Image $imageObject, ResponsiveImage $responsiveImage) {
         $urlPath = $responsiveImage->getUrlPath();
-        $promises = [];
 
         foreach ($sizes as $width => $height) {
-            $scaledFileSrc = "{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}";
+            $scaledFileSrc = trim("{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}", '/');
             $scaledFilePath = "{$this->publicPath}/{$scaledFileSrc}";
 
-            if ($this->async && Fork::supported()) {
-                $promises[] = Fork::spawn([$this, 'scaleImage'], [$scaledFilePath, $imageObject, $width, $height])->join();
-            } else {
-                $this->scaleImage($scaledFilePath, $imageObject, $width, $height);
+            $promise = $this->createScaleProcess($imageObject, $width, $height, $scaledFilePath);
+
+            if ($promise) {
+                $responsiveImage->addPromise($promise);
             }
 
             $responsiveImage->addSource($scaledFileSrc, $width);
         }
+    }
 
-        $this->promises[$responsiveImage->src()] = \Amp\all($promises);
+    private function createScaleProcess(Image $imageObject, $width, $height, $scaledFilePath) {
+        if ($this->async) {
+            $factory = $this;
 
-        return $responsiveImage;
+            $promise = Fork::spawn(function () use ($factory, $imageObject, $width, $height, $scaledFilePath) {
+                $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
+                $factory->saveImageFile($scaledFilePath, $scaledImage);
+            })->join();
+
+            return $promise;
+        } else {
+            $this->scaleImage($scaledFilePath, $imageObject, $width, $height);
+
+            return false;
+        }
     }
 
     /**
@@ -230,7 +227,7 @@ class ResponsiveFactory
      *
      * @return Image
      */
-    private function scaleImage(string $path, Image $imageObject, $width, $height) : Image {
+    public function scaleImage(string $path, Image $imageObject, $width, $height) : Image {
         $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
 
         $this->saveImageFile($path, $scaledImage);
@@ -244,7 +241,7 @@ class ResponsiveFactory
      * @param string $path
      * @param string $image
      */
-    private function saveImageFile(string $path, string $image) {
+    public function saveImageFile(string $path, string $image) {
         if (!$this->enableCache || !$this->fs->exists($path)) {
             $this->fs->dumpFile($path, $image);
         }

@@ -12,17 +12,17 @@
     "prefer-stable": true,
     "require" : {
         "PHP" : ">=7.1",
-        "symfony/finder" : "^3.1@stable",
-        "symfony/filesystem" : "^3.1@stable",
-        "intervention/image": "^2.3@stable",
-        "ps/image-optimizer": "^1.0@stable",
+        "symfony/finder" : "^3.1",
+        "symfony/filesystem" : "^3.1",
+        "intervention/image": "^2.3",
+        "ps/image-optimizer": "^1.0",
         "amphp/loop": "dev-master@dev",
         "amphp/amp": "2.0.x-dev@dev",
         "amphp/parallel": "0.1.x-dev@dev"
     },
     "require-dev" : {
-        "larapack/dd" : "^1.0@stable",
-        "phpunit/phpunit" : "^5.6@stable"
+        "larapack/dd" : "^1.0",
+        "phpunit/phpunit" : "^5.6"
     },
     "autoload" : {
         "psr-4" : {

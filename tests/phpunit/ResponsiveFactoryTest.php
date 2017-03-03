@@ -136,7 +136,6 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function test_async() {
         $url = 'img/image.jpeg';
-
         $factory = new ResponsiveFactory(new DefaultConfigurator([
             'publicPath'   => $this->publicPath,
             'engine'       => 'gd',
@@ -147,19 +146,21 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
         ]));
 
         $responsiveImage = $factory->create($url);
+
         $this->assertTrue(count($responsiveImage->getSrcset()) > 1);
         $this->assertEquals("/{$url}", $responsiveImage->src());
 
-        $self = $this;
+        $testCase = $this;
+        $responsiveImage->onSaved(function () use ($testCase, $responsiveImage) {
+            $fs = new Filesystem();
 
-        Loop::execute(function () use ($self, $factory, $responsiveImage) {
-            $factory->done(function () use ($self, $responsiveImage) {
-                $fs = new Filesystem();
+            foreach ($responsiveImage->getSrcset() as $src) {
+                $src = trim($src, '/');
 
-                foreach ($responsiveImage->getSrcset() as $src) {
-                    $self->assertTrue($fs->exists("{$self->publicPath}{$src}"));
-                }
-            });
+                $testCase->assertTrue($fs->exists("{$testCase->publicPath}/{$src}"));
+            }
         });
+
+        \Amp\wait($responsiveImage->getMainPromise());
     }
 }

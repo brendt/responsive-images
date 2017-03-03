@@ -2,6 +2,8 @@
 
 namespace Brendt\Image;
 
+use AsyncInterop\Promise;
+
 class ResponsiveImage
 {
 
@@ -35,6 +37,9 @@ class ResponsiveImage
      */
     private $urlPath = '';
 
+
+    private $promises;
+
     /**
      * ResponsiveImage constructor.
      *
@@ -44,6 +49,22 @@ class ResponsiveImage
         $src = preg_replace('/^(\/|\.\/)/', '', $src);
 
         $this->src = "/{$src}";
+    }
+
+    public function onSaved(callable $callback) : ResponsiveImage{
+        $this->getMainPromise()->when($callback);
+
+        return $this;
+    }
+
+    public function addPromise(Promise $promise) : ResponsiveImage {
+        $this->promises[] = $promise;
+
+        return $this;
+    }
+
+    public function getMainPromise() : Promise {
+        return \Amp\all($this->promises);
     }
 
     /**
@@ -184,6 +205,13 @@ class ResponsiveImage
      */
     public function getSrc() {
         return $this->src;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPromises() {
+        return $this->promises;
     }
 
 }
