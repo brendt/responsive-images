@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0
+
+- Add `async` option to downscale images in separate processes. PHP's `pcntl` extension is required for this to work.
+
 ## 1.2.2
 
 - Add simple construct for the ResponsiveFactory.
