@@ -2,6 +2,8 @@
 
 namespace Brendt\Image;
 
+use Amp\Parallel\Forking\Fork;
+use AsyncInterop\Promise;
 use Brendt\Image\Config\DefaultConfigurator;
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
 use Brendt\Image\Exception\FileNotFoundException;
@@ -54,6 +56,11 @@ class ResponsiveFactory
     private $optimize;
 
     /**
+     * @var bool
+     */
+    private $async;
+
+    /**
      * The Intervention image engine.
      *
      * @var ImageManager
@@ -74,6 +81,11 @@ class ResponsiveFactory
      * @var Optimizer
      */
     protected $optimizer;
+
+    /**
+     * @var Promise[]
+     */
+    protected $promises;
 
     /**
      * ResponsiveFactory constructor.
@@ -104,7 +116,7 @@ class ResponsiveFactory
      * @return ResponsiveImage
      * @throws FileNotFoundException
      */
-    public function create($src) : ResponsiveImage {
+    public function create($src) {
         $responsiveImage = new ResponsiveImage($src);
         $src = $responsiveImage->src();
         $sourceImage = $this->getImageFile($this->sourcePath, $src);
@@ -144,15 +156,14 @@ class ResponsiveFactory
         }
 
         $imageObject = $this->engine->make($sourceImage->getPathname());
+
+        // TODO: This piece of code should be added as a size and not as a "default".
+        // It's because the WidthScaler skips the default size.
         $width = $imageObject->getWidth();
         $responsiveImage->addSource($src, $width);
 
         $sizes = $this->scaler->scale($sourceImage, $imageObject);
-        $this->createScaledImages($sizes, $imageObject, $responsiveImage);
-
-        if ($this->optimize) {
-            $this->optimizeResponsiveImage($responsiveImage);
-        }
+        $this->createScaledImages($imageObject, $responsiveImage, $sizes);
 
         return $responsiveImage;
     }
@@ -169,20 +180,84 @@ class ResponsiveFactory
      * @param ResponsiveImage $responsiveImage
      *
      * @return ResponsiveImage
+     *
+     * @TODO: refactor code duplication
      */
-    private function createScaledImages(array $sizes, Image $imageObject, ResponsiveImage $responsiveImage) : ResponsiveImage {
+    public function createScaledImages(Image $imageObject, ResponsiveImage $responsiveImage, array $sizes) : ResponsiveImage {
         $urlPath = $responsiveImage->getUrlPath();
+        $async = $this->async && Fork::supported();
+
+        if ($async) {
+            $factory = $this;
+            $optimize = $this->optimize;
+
+            $fork = Fork::spawn(function () use ($factory, $imageObject, $responsiveImage, $sizes, $urlPath, $optimize) {
+                foreach ($sizes as $width => $height) {
+                    $scaledFileSrc = trim("{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}", '/');
+                    $scaledFilePath = "{$factory->getPublicPath()}/{$scaledFileSrc}";
+
+                    $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
+                    $factory->saveImageFile($scaledFilePath, $scaledImage);
+                }
+
+                if ($optimize) {
+                    $factory->optimizeResponsiveImage($responsiveImage);
+                }
+            });
+
+            $responsiveImage->setPromise($fork->join());
+        }
 
         foreach ($sizes as $width => $height) {
-            $scaledFileSrc = "{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}";
+            $scaledFileSrc = trim("{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}", '/');
             $scaledFilePath = "{$this->publicPath}/{$scaledFileSrc}";
-            $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
 
-            $this->saveImageFile($scaledFilePath, $scaledImage);
             $responsiveImage->addSource($scaledFileSrc, $width);
+
+            if (!$async) {
+                $deferred = new \Amp\Deferred();
+                $responsiveImage->setPromise($deferred->promise());
+                $deferred->resolve();
+
+                $this->scaleImage($scaledFilePath, $imageObject, $width, $height);
+
+                if ($this->optimize) {
+                    $this->optimizeResponsiveImage($responsiveImage);
+                }
+            }
         }
 
         return $responsiveImage;
+    }
+
+    /**
+     * Scale an image and save it.
+     *
+     * @param string $path
+     * @param Image  $imageObject
+     * @param        $width
+     * @param        $height
+     *
+     * @return Image
+     */
+    public function scaleImage(string $path, Image $imageObject, $width, $height) : Image {
+        $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
+
+        $this->saveImageFile($path, $scaledImage);
+
+        return $scaledImage;
+    }
+
+    /**
+     * Save the image file contents to a path
+     *
+     * @param string $path
+     * @param string $image
+     */
+    public function saveImageFile(string $path, string $image) {
+        if (!$this->enableCache || !$this->fs->exists($path)) {
+            $this->fs->dumpFile($path, $image);
+        }
     }
 
     /**
@@ -192,24 +267,12 @@ class ResponsiveFactory
      *
      * @return ResponsiveImage
      */
-    private function optimizeResponsiveImage(ResponsiveImage $responsiveImage) : ResponsiveImage {
+    public function optimizeResponsiveImage(ResponsiveImage $responsiveImage) : ResponsiveImage {
         foreach ($responsiveImage->getSrcset() as $imageFile) {
             $this->optimizer->optimize("{$this->publicPath}/{$imageFile}");
         }
 
         return $responsiveImage;
-    }
-
-    /**
-     * Save the image file contents to a path
-     *
-     * @param string $path
-     * @param string $image
-     */
-    private function saveImageFile(string $path, string $image) {
-        if (!$this->enableCache || !$this->fs->exists($path)) {
-            $this->fs->dumpFile($path, $image);
-        }
     }
 
     /**
@@ -289,6 +352,24 @@ class ResponsiveFactory
         $this->optimize = $optimize;
 
         return $this;
+    }
+
+    /**
+     * @param bool $async
+     *
+     * @return ResponsiveFactory
+     */
+    public function setAsync(bool $async) : ResponsiveFactory {
+        $this->async = $async;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPublicPath() : string {
+        return $this->publicPath;
     }
 
 }
