@@ -161,6 +161,7 @@ class ResponsiveFactory
         // It's because the WidthScaler skips the default size.
         $width = $imageObject->getWidth();
         $responsiveImage->addSource($src, $width);
+        $imageObject->destroy();
 
         $this->createScaledImages($sourceImage, $responsiveImage);
 
@@ -225,6 +226,8 @@ class ResponsiveFactory
             $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
             $this->saveImageFile($scaledFilePath, $scaledImage);
         }
+
+        $imageObject->destroy();
 
         if ($this->optimize) {
             $this->optimizeResponsiveImage($responsiveImage);
