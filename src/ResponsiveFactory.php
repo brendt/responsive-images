@@ -200,6 +200,10 @@ class ResponsiveFactory
             $responsiveImage->setPromise($fork->join());
         } else {
             $this->scaleProcess($sourceImage, $responsiveImage);
+            $deferred = new \Amp\Deferred();
+            $deferred->resolve();
+
+            $responsiveImage->setPromise($deferred->promise());
         }
 
         return $responsiveImage;

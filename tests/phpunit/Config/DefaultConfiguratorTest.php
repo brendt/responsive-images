@@ -21,7 +21,7 @@ class DefaultConfiguratorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException Brendt\Image\Exception\InvalidConfigurationException
+     * @expectedException \Brendt\Image\Exception\InvalidConfigurationException
      */
     public function test_construct_throws_exception_with_unknown_driver() {
         new DefaultConfigurator([

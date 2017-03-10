@@ -4,6 +4,7 @@ namespace Brendt\Image\Tests\Phpunit;
 
 use Brendt\Image\Config\DefaultConfigurator;
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
+use Brendt\Image\ResponsiveFactory;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
