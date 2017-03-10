@@ -224,43 +224,16 @@ class ResponsiveFactory
             $scaledFilePath = "{$this->getPublicPath()}/{$scaledFileSrc}";
 
             $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
-            $this->saveImageFile($scaledFilePath, $scaledImage);
+
+            if (!$this->enableCache || !$this->fs->exists($scaledFilePath)) {
+                $this->fs->dumpFile($scaledFilePath, $scaledImage);
+            }
         }
 
         $imageObject->destroy();
 
         if ($this->optimize) {
             $this->optimizeResponsiveImage($responsiveImage);
-        }
-    }
-
-    /**
-     * Scale an image and save it.
-     *
-     * @param string $path
-     * @param Image  $imageObject
-     * @param        $width
-     * @param        $height
-     *
-     * @return Image
-     */
-    public function scaleImage(string $path, Image $imageObject, $width, $height) : Image {
-        $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
-
-        $this->saveImageFile($path, $scaledImage);
-
-        return $scaledImage;
-    }
-
-    /**
-     * Save the image file contents to a path
-     *
-     * @param string $path
-     * @param string $image
-     */
-    public function saveImageFile(string $path, string $image) {
-        if (!$this->enableCache || !$this->fs->exists($path)) {
-            $this->fs->dumpFile($path, $image);
         }
     }
 
