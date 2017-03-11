@@ -2,8 +2,6 @@
 
 namespace Brendt\Image\Tests\Phpunit;
 
-use Amp\Parallel\Forking\Fork;
-use AsyncInterop\Loop;
 use Brendt\Image\Config\DefaultConfigurator;
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
 use Brendt\Image\ResponsiveFactory;
@@ -27,7 +25,7 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @var string
      */
-    private $publicPath = './tests/public';
+    public $publicPath = './tests/public';
 
     public function __construct() {
         parent::__construct();
@@ -156,7 +154,6 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
 
             foreach ($responsiveImage->getSrcset() as $src) {
                 $src = trim($src, '/');
-
                 $testCase->assertTrue($fs->exists("{$testCase->publicPath}/{$src}"));
             }
         });

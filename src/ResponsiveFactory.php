@@ -161,9 +161,9 @@ class ResponsiveFactory
         // It's because the WidthScaler skips the default size.
         $width = $imageObject->getWidth();
         $responsiveImage->addSource($src, $width);
+        $imageObject->destroy();
 
-        $sizes = $this->scaler->scale($sourceImage, $imageObject);
-        $this->createScaledImages($imageObject, $responsiveImage, $sizes);
+        $this->createScaledImages($sourceImage, $responsiveImage);
 
         return $responsiveImage;
     }
@@ -175,88 +175,65 @@ class ResponsiveFactory
      *      ...
      * ]
      *
-     * @param array           $sizes
-     * @param Image           $imageObject
+     * @param SplFileInfo     $sourceImage
      * @param ResponsiveImage $responsiveImage
      *
      * @return ResponsiveImage
-     *
-     * @TODO: refactor code duplication
      */
-    public function createScaledImages(Image $imageObject, ResponsiveImage $responsiveImage, array $sizes) : ResponsiveImage {
-        $urlPath = $responsiveImage->getUrlPath();
+    public function createScaledImages(SplFileInfo $sourceImage, ResponsiveImage $responsiveImage) : ResponsiveImage {
         $async = $this->async && Fork::supported();
-
-        if ($async) {
-            $factory = $this;
-            $optimize = $this->optimize;
-
-            $fork = Fork::spawn(function () use ($factory, $imageObject, $responsiveImage, $sizes, $urlPath, $optimize) {
-                foreach ($sizes as $width => $height) {
-                    $scaledFileSrc = trim("{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}", '/');
-                    $scaledFilePath = "{$factory->getPublicPath()}/{$scaledFileSrc}";
-
-                    $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
-                    $factory->saveImageFile($scaledFilePath, $scaledImage);
-                }
-
-                if ($optimize) {
-                    $factory->optimizeResponsiveImage($responsiveImage);
-                }
-            });
-
-            $responsiveImage->setPromise($fork->join());
-        }
+        $imageObject = $this->engine->make($sourceImage->getPathname());
+        $urlPath = $responsiveImage->getUrlPath();
+        $sizes = $this->scaler->scale($sourceImage, $imageObject);
 
         foreach ($sizes as $width => $height) {
             $scaledFileSrc = trim("{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}", '/');
-            $scaledFilePath = "{$this->publicPath}/{$scaledFileSrc}";
-
             $responsiveImage->addSource($scaledFileSrc, $width);
+        }
 
-            if (!$async) {
-                $deferred = new \Amp\Deferred();
-                $responsiveImage->setPromise($deferred->promise());
-                $deferred->resolve();
+        if ($async) {
+            $factory = $this;
 
-                $this->scaleImage($scaledFilePath, $imageObject, $width, $height);
+            $fork = Fork::spawn(function () use ($factory, $sourceImage, $responsiveImage) {
+                $factory->scaleProcess($sourceImage, $responsiveImage);
+            });
 
-                if ($this->optimize) {
-                    $this->optimizeResponsiveImage($responsiveImage);
-                }
-            }
+            $responsiveImage->setPromise($fork->join());
+        } else {
+            $this->scaleProcess($sourceImage, $responsiveImage);
+            $deferred = new \Amp\Deferred();
+            $deferred->resolve();
+
+            $responsiveImage->setPromise($deferred->promise());
         }
 
         return $responsiveImage;
     }
 
     /**
-     * Scale an image and save it.
-     *
-     * @param string $path
-     * @param Image  $imageObject
-     * @param        $width
-     * @param        $height
-     *
-     * @return Image
+     * @param SplFileInfo     $sourceImage
+     * @param ResponsiveImage $responsiveImage
      */
-    public function scaleImage(string $path, Image $imageObject, $width, $height) : Image {
-        $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
+    public function scaleProcess(SplFileInfo $sourceImage, ResponsiveImage $responsiveImage) {
+        $urlPath = $responsiveImage->getUrlPath();
+        $imageObject = $this->engine->make($sourceImage->getPathname());
+        $sizes = $this->scaler->scale($sourceImage, $imageObject);
 
-        $this->saveImageFile($path, $scaledImage);
+        foreach ($sizes as $width => $height) {
+            $scaledFileSrc = trim("{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}", '/');
+            $scaledFilePath = "{$this->getPublicPath()}/{$scaledFileSrc}";
 
-        return $scaledImage;
-    }
+            $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
 
-    /**
-     * Save the image file contents to a path
-     *
-     * @param string $path
-     * @param string $image
-     */
-    public function saveImageFile(string $path, string $image) {
-        if (!$this->enableCache || !$this->fs->exists($path)) {
-            $this->fs->dumpFile($path, $image);
+            if (!$this->enableCache || !$this->fs->exists($scaledFilePath)) {
+                $this->fs->dumpFile($scaledFilePath, $scaledImage);
+            }
+        }
+
+        $imageObject->destroy();
+
+        if ($this->optimize) {
+            $this->optimizeResponsiveImage($responsiveImage);
         }
     }
 

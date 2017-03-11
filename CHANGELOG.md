@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1
+
+- Several bug fixes and optimizations when running enabling the `async` option.
+
 ## 1.3.0
 
 - Add `async` option to downscale images in separate processes. PHP's `pcntl` extension is required for this to work.
