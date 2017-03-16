@@ -8,7 +8,6 @@
             "email" : "brent@pageon.be"
         }
     ],
-    "minimum-stability": "dev",
     "prefer-stable": true,
     "require" : {
         "PHP" : ">=7.1",
@@ -16,9 +15,11 @@
         "symfony/filesystem" : "^3.1",
         "intervention/image": "^2.3",
         "ps/image-optimizer": "^1.0",
-        "amphp/loop": "dev-master@dev",
-        "amphp/amp": "2.0.x-dev@dev",
-        "amphp/parallel": "0.1.x-dev@dev"
+        "amphp/process": "dev-amp_v2#86479bc591d974fcf48e6340fd15a22f12a8f907",
+        "amphp/loop": "dev-master#302a5c714c2700d32ca9444be09f21b2835b213f",
+        "amphp/amp": "dev-master#72378e2b82d9f1dee6b93de2bee8aa138e7f67e1",
+        "amphp/parallel": "dev-master#9cc70c1f86bf8ffa8ca744e40702502410b733f0",
+        "async-interop/promise": "^0.4"
     },
     "require-dev" : {
         "larapack/dd" : "^1.0",

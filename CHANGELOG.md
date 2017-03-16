@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.2
+
+- Add fixed amphp versions because of BC breaking changes in their library.
+
 ## 1.3.1
 
 - Several bug fixes and optimizations when running enabling the `async` option.
