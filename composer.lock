@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "eec4fdcce273f9c43e292486c35fec71",
-    "content-hash": "125bff0a09cf960e3a4df4d6a05b54e5",
+    "hash": "3b2163f4cba68eee089e67f973264906",
+    "content-hash": "002febafbba1efe65581aff66cb2c9a4",
     "packages": [
         {
             "name": "amphp/amp",
@@ -2274,8 +2274,9 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "stability-flags": {
+        "amphp/process": 20,
         "amphp/loop": 20,
         "amphp/amp": 20,
         "amphp/parallel": 20
