@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b2ac1f3e82f9e8b44a485036f058b5e6",
-    "content-hash": "5006b57913849e5d41147859ebf31790",
+    "hash": "eec4fdcce273f9c43e292486c35fec71",
+    "content-hash": "125bff0a09cf960e3a4df4d6a05b54e5",
     "packages": [
         {
             "name": "amphp/amp",
@@ -22,17 +22,13 @@
                 "shasum": ""
             },
             "require": {
-                "async-interop/event-loop": "^0.5",
-                "async-interop/event-loop-implementation": "^0.5",
-                "async-interop/promise": "^0.4",
                 "php": ">=7"
             },
             "require-dev": {
-                "amphp/loop": "dev-master",
-                "async-interop/promise-test": "^0.4.1",
+                "amphp/phpunit-util": "dev-master",
                 "friendsofphp/php-cs-fixer": "~1.9",
-                "humbug/humbug": "^1@dev",
-                "phpunit/phpunit": "^5.7"
+                "phpunit/phpunit": "^6",
+                "react/promise": "^2"
             },
             "type": "library",
             "extra": {
@@ -45,7 +41,6 @@
                     "Amp\\": "lib/"
                 },
                 "files": [
-                    "lib/bootstrap.php",
                     "lib/functions.php"
                 ]
             },
@@ -55,14 +50,20 @@
             ],
             "authors": [
                 {
+                    "name": "Bob Weinand",
+                    "email": "bobwei9@hotmail.com"
+                },
+                {
+                    "name": "Niklas Keller",
+                    "email": "me@kelunik.com"
+                },
+                {
                     "name": "Daniel Lowrey",
-                    "email": "rdlowrey@php.net",
-                    "role": "Creator / Lead Developer"
+                    "email": "rdlowrey@php.net"
                 },
                 {
                     "name": "Aaron Piotrowski",
-                    "email": "aaron@trowski.com",
-                    "role": "v2.0 Developer"
+                    "email": "aaron@trowski.com"
                 }
             ],
             "description": "A non-blocking concurrency framework for PHP applications",
@@ -596,7 +597,7 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v3.2.5",
+            "version": "v3.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
@@ -645,7 +646,7 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v3.2.5",
+            "version": "v3.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
@@ -694,7 +695,7 @@
         },
         {
             "name": "symfony/options-resolver",
-            "version": "v3.2.5",
+            "version": "v3.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/options-resolver.git",
@@ -748,7 +749,7 @@
         },
         {
             "name": "symfony/process",
-            "version": "v3.2.5",
+            "version": "v3.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
@@ -1389,16 +1390,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "5.7.15",
+            "version": "5.7.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "b99112aecc01f62acf3d81a3f59646700a1849e5"
+                "reference": "dafc78e2a7d12139b0e97078d1082326bd09363d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/b99112aecc01f62acf3d81a3f59646700a1849e5",
-                "reference": "b99112aecc01f62acf3d81a3f59646700a1849e5",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/dafc78e2a7d12139b0e97078d1082326bd09363d",
+                "reference": "dafc78e2a7d12139b0e97078d1082326bd09363d",
                 "shasum": ""
             },
             "require": {
@@ -1467,7 +1468,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2017-03-02 15:22:43"
+            "time": "2017-03-15 13:02:34"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -2102,7 +2103,7 @@
         },
         {
             "name": "symfony/var-dumper",
-            "version": "v3.2.5",
+            "version": "v3.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/var-dumper.git",
@@ -2168,7 +2169,7 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.2.5",
+            "version": "v3.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
