@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+
+- Add optimizer options support
+
 ## 1.3.2
 
 - Add fixed amphp versions because of BC breaking changes in their library.
