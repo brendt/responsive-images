@@ -61,6 +61,11 @@ class ResponsiveFactory
     private $async;
 
     /**
+     *
+     */
+    private $optimizerOptions = [];
+
+    /**
      * The Intervention image engine.
      *
      * @var ImageManager
@@ -102,7 +107,8 @@ class ResponsiveFactory
         $this->engine = new ImageManager([
             'driver' => $this->driver,
         ]);
-        $this->optimizer = (new OptimizerFactory())->get();
+
+        $this->optimizer = (new OptimizerFactory($this->optimizerOptions))->get();
         $this->fs = new Filesystem();
 
         if (!$this->fs->exists($this->publicPath)) {
@@ -347,6 +353,17 @@ class ResponsiveFactory
      */
     public function getPublicPath() : string {
         return $this->publicPath;
+    }
+
+    /**
+     * @param mixed $optimizerOptions
+     *
+     * @return ResponsiveFactory
+     */
+    public function setOptimizerOptions($optimizerOptions) : ResponsiveFactory {
+        $this->optimizerOptions = $optimizerOptions;
+
+        return $this;
     }
 
 }

@@ -18,16 +18,17 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
      * @var array
      */
     protected $config = [
-        'driver'       => 'gd',
-        'publicPath'   => './',
-        'sourcePath'   => './',
-        'async'        => false,
-        'enableCache'  => false,
-        'optimize'     => false,
-        'scaler'       => 'filesize',
-        'stepModifier' => 0.5,
-        'minFileSize'  => 5000,
-        'minWidth'     => 150,
+        'driver'           => 'gd',
+        'publicPath'       => './',
+        'sourcePath'       => './',
+        'async'            => false,
+        'enableCache'      => false,
+        'optimize'         => false,
+        'scaler'           => 'filesize',
+        'stepModifier'     => 0.5,
+        'minFileSize'      => 5000,
+        'minWidth'         => 150,
+        'optimizerOptions' => [],
     ];
 
     /**
@@ -69,6 +70,7 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
             ->setEnableCache($this->config['enableCache'])
             ->setOptimize($this->config['optimize'])
             ->setAsync($this->config['async'])
+            ->setOptimizerOptions($this->config['optimizerOptions'])
             ->setScaler($scaler);
     }
 
