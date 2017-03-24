@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+
+- Temporary remove Amp because of BC breaking changes with each update.
+
 ## 1.4.0
 
 - Add optimizer options support
