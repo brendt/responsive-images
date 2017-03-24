@@ -10,7 +10,6 @@ use Brendt\Image\Exception\FileNotFoundException;
 use Brendt\Image\Scaler\Scaler;
 use ImageOptimizer\Optimizer;
 use ImageOptimizer\OptimizerFactory;
-use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -187,7 +186,7 @@ class ResponsiveFactory
      * @return ResponsiveImage
      */
     public function createScaledImages(SplFileInfo $sourceImage, ResponsiveImage $responsiveImage) : ResponsiveImage {
-        $async = $this->async && Fork::supported();
+//        $async = $this->async && Fork::supported();
         $imageObject = $this->engine->make($sourceImage->getPathname());
         $urlPath = $responsiveImage->getUrlPath();
         $sizes = $this->scaler->scale($sourceImage, $imageObject);
@@ -197,21 +196,21 @@ class ResponsiveFactory
             $responsiveImage->addSource($scaledFileSrc, $width);
         }
 
-        if ($async) {
-            $factory = $this;
+//        if ($async) {
+//            $factory = $this;
+//
+//            $fork = Fork::spawn(function () use ($factory, $sourceImage, $responsiveImage) {
+//                $factory->scaleProcess($sourceImage, $responsiveImage);
+//            });
+//
+//            $responsiveImage->setPromise($fork->join());
+//        } else {
+        $this->scaleProcess($sourceImage, $responsiveImage);
+//            $deferred = new \Amp\Deferred();
+//            $deferred->resolve();
 
-            $fork = Fork::spawn(function () use ($factory, $sourceImage, $responsiveImage) {
-                $factory->scaleProcess($sourceImage, $responsiveImage);
-            });
-
-            $responsiveImage->setPromise($fork->join());
-        } else {
-            $this->scaleProcess($sourceImage, $responsiveImage);
-            $deferred = new \Amp\Deferred();
-            $deferred->resolve();
-
-            $responsiveImage->setPromise($deferred->promise());
-        }
+//            $responsiveImage->setPromise($deferred->promise());
+//        }
 
         return $responsiveImage;
     }
