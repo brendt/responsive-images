@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0
+
+- Removed AMP dependencies.
+
 ## 1.4.1
 
 - Temporary remove Amp because of BC breaking changes with each update.
