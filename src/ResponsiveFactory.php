@@ -263,7 +263,7 @@ class ResponsiveFactory
      *
      * @return SplFileInfo
      */
-    private function getImageFile(string $directory, string $path) : SplFileInfo {
+    private function getImageFile(string $directory, string $path) : ?SplFileInfo {
         $iterator = Finder::create()->files()->in($directory)->path(ltrim($path, '/'))->getIterator();
         $iterator->rewind();
 
