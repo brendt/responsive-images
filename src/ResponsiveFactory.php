@@ -2,8 +2,6 @@
 
 namespace Brendt\Image;
 
-use Amp\Parallel\Forking\Fork;
-use AsyncInterop\Promise;
 use Brendt\Image\Config\DefaultConfigurator;
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
 use Brendt\Image\Exception\FileNotFoundException;
@@ -55,11 +53,6 @@ class ResponsiveFactory
     private $optimize;
 
     /**
-     * @var bool
-     */
-    private $async;
-
-    /**
      *
      */
     private $optimizerOptions = [];
@@ -85,11 +78,6 @@ class ResponsiveFactory
      * @var Optimizer
      */
     protected $optimizer;
-
-    /**
-     * @var Promise[]
-     */
-    protected $promises;
 
     /**
      * ResponsiveFactory constructor.
@@ -186,7 +174,6 @@ class ResponsiveFactory
      * @return ResponsiveImage
      */
     public function createScaledImages(SplFileInfo $sourceImage, ResponsiveImage $responsiveImage) : ResponsiveImage {
-//        $async = $this->async && Fork::supported();
         $imageObject = $this->engine->make($sourceImage->getPathname());
         $urlPath = $responsiveImage->getUrlPath();
         $sizes = $this->scaler->scale($sourceImage, $imageObject);
@@ -196,21 +183,7 @@ class ResponsiveFactory
             $responsiveImage->addSource($scaledFileSrc, $width);
         }
 
-//        if ($async) {
-//            $factory = $this;
-//
-//            $fork = Fork::spawn(function () use ($factory, $sourceImage, $responsiveImage) {
-//                $factory->scaleProcess($sourceImage, $responsiveImage);
-//            });
-//
-//            $responsiveImage->setPromise($fork->join());
-//        } else {
         $this->scaleProcess($sourceImage, $responsiveImage);
-//            $deferred = new \Amp\Deferred();
-//            $deferred->resolve();
-
-//            $responsiveImage->setPromise($deferred->promise());
-//        }
 
         return $responsiveImage;
     }
@@ -332,17 +305,6 @@ class ResponsiveFactory
      */
     public function setOptimize(bool $optimize) : ResponsiveFactory {
         $this->optimize = $optimize;
-
-        return $this;
-    }
-
-    /**
-     * @param bool $async
-     *
-     * @return ResponsiveFactory
-     */
-    public function setAsync(bool $async) : ResponsiveFactory {
-        $this->async = $async;
 
         return $this;
     }

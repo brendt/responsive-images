@@ -21,7 +21,6 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
         'driver'           => 'gd',
         'publicPath'       => './',
         'sourcePath'       => './',
-        'async'            => false,
         'enableCache'      => false,
         'optimize'         => false,
         'scaler'           => 'filesize',
@@ -69,7 +68,6 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
             ->setSourcePath($this->config['sourcePath'])
             ->setEnableCache($this->config['enableCache'])
             ->setOptimize($this->config['optimize'])
-            ->setAsync($this->config['async'])
             ->setOptimizerOptions($this->config['optimizerOptions'])
             ->setScaler($scaler);
     }

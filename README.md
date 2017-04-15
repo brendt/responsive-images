@@ -66,59 +66,6 @@ $factory = new ResponsiveFactory(new DefaultConfigurator([
 ]));
 ```
 
-### Async
-
-If you're creating more than one image at a time, eg. in a loop when parsing a page; you might want to take a look at the `async` option.
- 
-#### Prerequisites
-
-- PHP's `pcntl` extension has to be installed: [http://php.net/manual/en/book.pcntl.php](http://php.net/manual/en/book.pcntl.php).
-- The `async` option must be set to true.
-
-If any of those requirements aren't met, the ResponsiveFactory will fall back to using a single process. So it will never
- fail, but it will be slower to render images.
- 
-#### Implementation
-
-You'll have to change two things in your code when rendering images asynchronous.
-
-- Add a callback on the responsive image `onSave`.
-- At the end of all code, wait for all responsive images' promise to be fulfilled.
-
-```php
-$factory = new ResponsiveFactory(new DefaultConfigurator([
-    'async' => true,
-]));
-
-$responsiveImage = $factory->create($url);
-$responsiveImage->onSave(function () use ($responsiveImage) {
-    // The files of this image are saved.
-});
-
-\Amp\wait($responsiveImage->getPromise());
-```
-
-A more real world example would include multiple responsive images.
-
-```php
-// Create the factory and create multiple images, which are added to $images.
-
-// Do other things
-
-$promises = [];
-
-foreach ($images as $image) {
-    $promises[] = $image->getPromise();
-}
-
-$mainPromise = \Amp\all($promises);
-\Amp\wait($mainPromise);
-```
-
-The benefit of this approach is that you can do other things instead of having to wait for images to finish rendering.
- You could eg. start loading data from a database or render HTML pages (because the src, srcset and sizes of the
- ResponsiveImage are already set).
-
 ### Paths
 
 The `sourcePath` parameter is used to define where image source files are located. 
@@ -134,7 +81,6 @@ The above example would render images into `./public/img/image.jpeg`.
 - `publicPath`: the path to render image files. Defaults to `./`.
 - `enableCache`: enable or disable image caching. Enabling the cache wont' override existing images. Defaults to `false`.
 - `optimize`: enable or disable the use of different optimizers (if installed on the system). Defaults to `false`.
-- `async`: enable or disable asynchronous image rendering. Defaults to `false`.
 - `scaler`: which scaler algorithm to use. Defaults to `filesize`. Possible options are `filesize` or `width`.
 - `stepModifier`: a percentage (between 0 and 1) which is used to create different image sizes. The higher this modifier, the more image variations will be rendered. Defaults to `0.8`.
 - `minFileSize`: the minimum image filesize in bytes. Defaults to `10000`B (10KB).
