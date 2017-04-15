@@ -7,6 +7,7 @@ use Brendt\Image\ResponsiveFactory;
 use Brendt\Image\Scaler\AbstractScaler;
 use Brendt\Image\Scaler\FileSizeScaler;
 use Brendt\Image\Scaler\Scaler;
+use Brendt\Image\Scaler\SizesScaler;
 use Brendt\Image\Scaler\WidthScaler;
 
 class DefaultConfigurator implements ResponsiveFactoryConfigurator
@@ -30,6 +31,7 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
         'maxFileSize'      => null,
         'minWidth'         => 300,
         'maxWidth'         => null,
+        'sizes'            => [],
         'optimizerOptions' => [],
     ];
 
@@ -60,8 +62,12 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
                 $scaler = new FileSizeScaler($this);
                 break;
             case 'width':
-            default:
                 $scaler = new WidthScaler($this);
+                break;
+            case 'sizes':
+            default:
+                $scaler = new SizesScaler($this);
+                $scaler->setSizes($this->config['sizes']);
                 break;
         }
 
