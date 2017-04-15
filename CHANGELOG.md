@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.2
+
+- Bugfix for wrong composer sources.
+
 ## 1.7.1
 
 - Bugfix for srcset not correctly rendering.
