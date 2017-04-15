@@ -3,7 +3,6 @@
 namespace Brendt\Image\Tests\Phpunit\Scaler;
 
 use Brendt\Image\Config\DefaultConfigurator;
-use Brendt\Image\ResponsiveImage;
 use Brendt\Image\Scaler\FileSizeScaler;
 use Intervention\Image\ImageManager;
 use PHPUnit\Framework\TestCase;

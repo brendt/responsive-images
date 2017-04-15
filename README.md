@@ -52,7 +52,8 @@ A default configurator `DefaultConfigurator` is provider out of the box, and use
     'maxFileSize'      => null,
     'minWidth'         => 300,
     'maxWidth'         => null,
-    'optimizerOptions' => [],
+    'sizes'            => [],
+    'optimizerOptions' => [ 1920, 840, 300 ],
 ]
 ```
 
@@ -76,12 +77,14 @@ $factory = new ResponsiveFactory(new DefaultConfigurator([
 - `rebase`: ignore the path of the requested image when searching in the source directory. Defaults to `false`.
 - `enableCache`: enable or disable image caching. Enabling the cache wont' override existing images. Defaults to `false`.
 - `optimize`: enable or disable the use of different optimizers (if installed on the system). Defaults to `false`.
-- `scaler`: which scaler algorithm to use. Defaults to `filesize`. Possible options are `filesize` or `width`.
+- `scaler`: which scaler algorithm to use. Defaults to `filesize`. Possible options are `filesize`, `width` or `sizes`.
 - `stepModifier`: a percentage (between 0 and 1) which is used to create different image sizes. The higher this modifier, the more image variations will be rendered. Defaults to `0.5`.
 - `minFileSize`: the minimum image filesize in bytes. Defaults to `5000`B (5KB).
 - `maxFileSize`: the maximum image filesize in bytes. Defaults to `null`.
 - `minWidth`: the minimum image size in pixels. No images with size smaller than this number will be rendered. Defaults to `300` pixels.
 - `maxWidth`: the maximum image size in pixels. No images with size smaller than this number will be rendered. Defaults to `null`.
+- `sizes`: this parameter is used when the `sizes` scaler is enabled. This scaler will generate a fixed set of sizes, based on this array. 
+ The expected values are the widths of the generated images. Defaults to `[]` (empty array). 
 
 ### Paths
 
@@ -109,6 +112,7 @@ $image = $factory->create('/img/responsive/image.jpeg');
 // Source file is searched in './src/images/img/responsive/image.jpeg' 
 // Public files are saved in './public/img/responsive/image-x.jpg'
 ``` 
+
 ```php
 // With rebase
 

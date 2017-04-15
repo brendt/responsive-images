@@ -1,6 +1,11 @@
 # Changelog
 
-# 1.6.0
+## 1.7.0
+
+- Add `sizes` scaler. This scaler can be configured to generate a fixed set of images based on pre-defined widths, 
+ provided via the `sizes` parameter. See the README for more information.
+
+## 1.6.0
 
 - Add `rebase` parameter.
 - Add `maxFileSize` parameter.
