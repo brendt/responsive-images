@@ -53,7 +53,12 @@ class ResponsiveFactory
     private $optimize;
 
     /**
-     *
+     * @var bool
+     */
+    private $rebase;
+
+    /**
+     * @var array
      */
     private $optimizerOptions = [];
 
@@ -112,21 +117,23 @@ class ResponsiveFactory
     public function create($src) {
         $responsiveImage = new ResponsiveImage($src);
         $src = $responsiveImage->src();
-        $sourceImage = $this->getImageFile($this->sourcePath, $src);
+        $sourcePath = $src;
+        if ($this->rebase) {
+            $sourcePath = pathinfo($src, PATHINFO_BASENAME);
+        }
+        
+        $sourceImage = $this->getImageFile($this->sourcePath, $sourcePath);
 
         if (!$sourceImage) {
-            throw new FileNotFoundException("{$this->sourcePath}{$src}");
+            throw new FileNotFoundException("{$this->sourcePath}/{$sourcePath}");
         }
 
-        $extension = $sourceImage->getExtension();
-        $fileName = str_replace(".{$extension}", '', $sourceImage->getFilename());
+        $extension = pathinfo($sourceImage->getExtension(), PATHINFO_EXTENSION);
+        $fileName = pathinfo($sourceImage->getFilename(), PATHINFO_FILENAME);
         $publicImagePath = "{$this->publicPath}/{$src}";
+        $urlPath = '/' . trim(pathinfo($src, PATHINFO_DIRNAME), '/');
 
-        $urlParts = explode('/', $src);
-        array_pop($urlParts);
-        $urlPath = implode('/', $urlParts);
-
-        $responsiveImage->setExtension($extension);
+        $responsiveImage->setExtension($sourceImage->getExtension());
         $responsiveImage->setFileName($fileName);
         $responsiveImage->setUrlPath($urlPath);
 
@@ -323,6 +330,17 @@ class ResponsiveFactory
      */
     public function setOptimizerOptions($optimizerOptions) : ResponsiveFactory {
         $this->optimizerOptions = $optimizerOptions;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $rebase
+     *
+     * @return ResponsiveFactory
+     */
+    public function setRebase(bool $rebase) : ResponsiveFactory {
+        $this->rebase = $rebase;
 
         return $this;
     }
