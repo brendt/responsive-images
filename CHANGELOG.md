@@ -2,7 +2,9 @@
 
 # 1.6.0
 
-- Add `rebase` option.
+- Add `rebase` parameter.
+- Add `maxFileSize` parameter.
+- Add `maxWidth` parameter.
 
 ## 1.5.1
 
