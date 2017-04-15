@@ -65,7 +65,17 @@ class WidthScalerTest extends TestCase
         $this->assertTrue(count($sizes) > 1);
     }
 
-    // TODO: test algorithm
+    public function test_scale_down_with_max_width() {
+        $sourceFile = $this->createSourceFile();
+        $imageObject = $this->createImageObject();
+
+        $this->scaler->setMaxWidth(1000);
+        $sizes = $this->scaler->scale($sourceFile, $imageObject);
+
+        foreach ($sizes as $width => $height) {
+            $this->assertTrue($width < 1000);
+        }
+    }
 
     private function createSourceFile() {
         $sourceFiles = Finder::create()->files()->in('./tests/img')->name('image.jpeg')->getIterator();

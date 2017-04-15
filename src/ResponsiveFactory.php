@@ -2,8 +2,6 @@
 
 namespace Brendt\Image;
 
-use Amp\Parallel\Forking\Fork;
-use AsyncInterop\Promise;
 use Brendt\Image\Config\DefaultConfigurator;
 use Brendt\Image\Config\ResponsiveFactoryConfigurator;
 use Brendt\Image\Exception\FileNotFoundException;
@@ -57,10 +55,10 @@ class ResponsiveFactory
     /**
      * @var bool
      */
-    private $async;
+    private $rebase;
 
     /**
-     *
+     * @var array
      */
     private $optimizerOptions = [];
 
@@ -85,11 +83,6 @@ class ResponsiveFactory
      * @var Optimizer
      */
     protected $optimizer;
-
-    /**
-     * @var Promise[]
-     */
-    protected $promises;
 
     /**
      * ResponsiveFactory constructor.
@@ -124,21 +117,23 @@ class ResponsiveFactory
     public function create($src) {
         $responsiveImage = new ResponsiveImage($src);
         $src = $responsiveImage->src();
-        $sourceImage = $this->getImageFile($this->sourcePath, $src);
+        $sourcePath = $src;
+        if ($this->rebase) {
+            $sourcePath = pathinfo($src, PATHINFO_BASENAME);
+        }
+        
+        $sourceImage = $this->getImageFile($this->sourcePath, $sourcePath);
 
         if (!$sourceImage) {
-            throw new FileNotFoundException("{$this->sourcePath}{$src}");
+            throw new FileNotFoundException("{$this->sourcePath}/{$sourcePath}");
         }
 
-        $extension = $sourceImage->getExtension();
-        $fileName = str_replace(".{$extension}", '', $sourceImage->getFilename());
+        $extension = pathinfo($sourceImage->getExtension(), PATHINFO_EXTENSION);
+        $fileName = pathinfo($sourceImage->getFilename(), PATHINFO_FILENAME);
         $publicImagePath = "{$this->publicPath}/{$src}";
+        $urlPath = '/' . trim(pathinfo($src, PATHINFO_DIRNAME), '/');
 
-        $urlParts = explode('/', $src);
-        array_pop($urlParts);
-        $urlPath = implode('/', $urlParts);
-
-        $responsiveImage->setExtension($extension);
+        $responsiveImage->setExtension($sourceImage->getExtension());
         $responsiveImage->setFileName($fileName);
         $responsiveImage->setUrlPath($urlPath);
 
@@ -186,7 +181,6 @@ class ResponsiveFactory
      * @return ResponsiveImage
      */
     public function createScaledImages(SplFileInfo $sourceImage, ResponsiveImage $responsiveImage) : ResponsiveImage {
-//        $async = $this->async && Fork::supported();
         $imageObject = $this->engine->make($sourceImage->getPathname());
         $urlPath = $responsiveImage->getUrlPath();
         $sizes = $this->scaler->scale($sourceImage, $imageObject);
@@ -196,21 +190,7 @@ class ResponsiveFactory
             $responsiveImage->addSource($scaledFileSrc, $width);
         }
 
-//        if ($async) {
-//            $factory = $this;
-//
-//            $fork = Fork::spawn(function () use ($factory, $sourceImage, $responsiveImage) {
-//                $factory->scaleProcess($sourceImage, $responsiveImage);
-//            });
-//
-//            $responsiveImage->setPromise($fork->join());
-//        } else {
         $this->scaleProcess($sourceImage, $responsiveImage);
-//            $deferred = new \Amp\Deferred();
-//            $deferred->resolve();
-
-//            $responsiveImage->setPromise($deferred->promise());
-//        }
 
         return $responsiveImage;
     }
@@ -337,17 +317,6 @@ class ResponsiveFactory
     }
 
     /**
-     * @param bool $async
-     *
-     * @return ResponsiveFactory
-     */
-    public function setAsync(bool $async) : ResponsiveFactory {
-        $this->async = $async;
-
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function getPublicPath() : string {
@@ -361,6 +330,17 @@ class ResponsiveFactory
      */
     public function setOptimizerOptions($optimizerOptions) : ResponsiveFactory {
         $this->optimizerOptions = $optimizerOptions;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $rebase
+     *
+     * @return ResponsiveFactory
+     */
+    public function setRebase(bool $rebase) : ResponsiveFactory {
+        $this->rebase = $rebase;
 
         return $this;
     }

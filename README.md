@@ -40,17 +40,19 @@ A default configurator `DefaultConfigurator` is provider out of the box, and use
  
 ```php
 [
-    'driver'       => 'gd',
-    'publicPath'   => './',
-    'sourcePath'   => './',
-    'enableCache'  => false,
-    'optimize'     => false, 
-    'async'        => false,
-    'scaler'       => 'filesize',
-    'stepModifier' => 0.5,
-    'minFileSize'  => 10000,
-    'minSize'      => 300,
-    'minWidth'     => 150,
+    'driver'           => 'gd',
+    'publicPath'       => './',
+    'sourcePath'       => './',
+    'rebase'           => false,
+    'enableCache'      => false,
+    'optimize'         => false,
+    'scaler'           => 'filesize',
+    'stepModifier'     => 0.5,
+    'minFileSize'      => 5000,
+    'maxFileSize'      => null,
+    'minWidth'         => 300,
+    'maxWidth'         => null,
+    'optimizerOptions' => [],
 ]
 ```
 
@@ -66,58 +68,20 @@ $factory = new ResponsiveFactory(new DefaultConfigurator([
 ]));
 ```
 
-### Async
+### All configuration options
 
-If you're creating more than one image at a time, eg. in a loop when parsing a page; you might want to take a look at the `async` option.
- 
-#### Prerequisites
-
-- PHP's `pcntl` extension has to be installed: [http://php.net/manual/en/book.pcntl.php](http://php.net/manual/en/book.pcntl.php).
-- The `async` option must be set to true.
-
-If any of those requirements aren't met, the ResponsiveFactory will fall back to using a single process. So it will never
- fail, but it will be slower to render images.
- 
-#### Implementation
-
-You'll have to change two things in your code when rendering images asynchronous.
-
-- Add a callback on the responsive image `onSave`.
-- At the end of all code, wait for all responsive images' promise to be fulfilled.
-
-```php
-$factory = new ResponsiveFactory(new DefaultConfigurator([
-    'async' => true,
-]));
-
-$responsiveImage = $factory->create($url);
-$responsiveImage->onSave(function () use ($responsiveImage) {
-    // The files of this image are saved.
-});
-
-\Amp\wait($responsiveImage->getPromise());
-```
-
-A more real world example would include multiple responsive images.
-
-```php
-// Create the factory and create multiple images, which are added to $images.
-
-// Do other things
-
-$promises = [];
-
-foreach ($images as $image) {
-    $promises[] = $image->getPromise();
-}
-
-$mainPromise = \Amp\all($promises);
-\Amp\wait($mainPromise);
-```
-
-The benefit of this approach is that you can do other things instead of having to wait for images to finish rendering.
- You could eg. start loading data from a database or render HTML pages (because the src, srcset and sizes of the
- ResponsiveImage are already set).
+- `driver`: the image driver to use. Defaults to `gd`. Possible options are `gd` or `imagick`.
+- `sourcePath`: the path to load image source files. Defaults to `./`.
+- `publicPath`: the path to render image files. Defaults to `./`.
+- `rebase`: ignore the path of the requested image when searching in the source directory. Defaults to `false`.
+- `enableCache`: enable or disable image caching. Enabling the cache wont' override existing images. Defaults to `false`.
+- `optimize`: enable or disable the use of different optimizers (if installed on the system). Defaults to `false`.
+- `scaler`: which scaler algorithm to use. Defaults to `filesize`. Possible options are `filesize` or `width`.
+- `stepModifier`: a percentage (between 0 and 1) which is used to create different image sizes. The higher this modifier, the more image variations will be rendered. Defaults to `0.5`.
+- `minFileSize`: the minimum image filesize in bytes. Defaults to `5000`B (5KB).
+- `maxFileSize`: the maximum image filesize in bytes. Defaults to `null`.
+- `minWidth`: the minimum image size in pixels. No images with size smaller than this number will be rendered. Defaults to `300` pixels.
+- `maxWidth`: the maximum image size in pixels. No images with size smaller than this number will be rendered. Defaults to `null`.
 
 ### Paths
 
@@ -127,15 +91,35 @@ In case of the first example and above configuration, the image file should be s
 The `publicPath` parameter is used to save rendered images into. This path should be the public directory of your website.
 The above example would render images into `./public/img/image.jpeg`. 
 
-### All configuration options
+#### Path rebasing
 
-- `driver`: the image driver to use. Defaults to `gd`. Possible options are `gd` or `imagick`.
-- `sourcePath`: the path to load image source files. Defaults to `./`.
-- `publicPath`: the path to render image files. Defaults to `./`.
-- `enableCache`: enable or disable image caching. Enabling the cache wont' override existing images. Defaults to `false`.
-- `optimize`: enable or disable the use of different optimizers (if installed on the system). Defaults to `false`.
-- `async`: enable or disable asynchronous image rendering. Defaults to `false`.
-- `scaler`: which scaler algorithm to use. Defaults to `filesize`. Possible options are `filesize` or `width`.
-- `stepModifier`: a percentage (between 0 and 1) which is used to create different image sizes. The higher this modifier, the more image variations will be rendered. Defaults to `0.8`.
-- `minFileSize`: the minimum image filesize in bytes. Defaults to `10000`B (10KB).
-- `minWidth`: the minimum image size in pixels. No images with size smaller than this number will be rendered. Defaults to `300` pixels.
+When the `rebase` option is enabled, source file lookup will differ: only the filename is used to search the file in the 
+ source directory. An example would be the following.
+ 
+```php
+// Without rebase
+
+$options = [
+    'sourcePath' => './src/images',
+    'publicPath' => './public',
+];
+
+$image = $factory->create('/img/responsive/image.jpeg');
+
+// Source file is searched in './src/images/img/responsive/image.jpeg' 
+// Public files are saved in './public/img/responsive/image-x.jpg'
+``` 
+```php
+// With rebase
+
+$options = [
+    'sourcePath' => './src/images',
+    'publicPath' => './public',
+    'rebase'     => true,
+];
+
+$image = $factory->create('/img/responsive/image.jpeg');
+
+// Source file is searched in './src/images/image.jpeg'  
+// Public files are saved in './public/img/responsive/image-x.jpg'
+```

@@ -63,6 +63,28 @@ class FileSizeScalerTest extends TestCase
         $this->assertTrue(count($sizes) > 1);
     }
 
+    public function test_scale_down_with_max_width() {
+        $sourceFile = $this->createSourceFile();
+        $imageObject = $this->createImageObject();
+
+        $this->scaler->setMaxWidth(1000);
+        $sizes = $this->scaler->scale($sourceFile, $imageObject);
+
+        foreach ($sizes as $width => $height) {
+            $this->assertTrue($width < 1000);
+        }
+    }
+
+    public function test_scale_down_with_max_filesize() {
+        $sourceFile = $this->createSourceFile();
+        $imageObject = $this->createImageObject();
+
+        $this->scaler->setMaxFileSize(100000);
+        $sizes = $this->scaler->scale($sourceFile, $imageObject);
+
+        $this->assertCount(3, $sizes);
+    }
+
     // TODO: test algorithm
 
     private function createImageObject() {

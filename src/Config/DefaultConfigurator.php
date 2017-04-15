@@ -21,13 +21,15 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
         'driver'           => 'gd',
         'publicPath'       => './',
         'sourcePath'       => './',
-        'async'            => false,
+        'rebase'           => false,
         'enableCache'      => false,
         'optimize'         => false,
         'scaler'           => 'filesize',
         'stepModifier'     => 0.5,
         'minFileSize'      => 5000,
-        'minWidth'         => 150,
+        'maxFileSize'      => null,
+        'minWidth'         => 300,
+        'maxWidth'         => null,
         'optimizerOptions' => [],
     ];
 
@@ -67,9 +69,9 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
             ->setDriver($this->config['driver'])
             ->setPublicPath($this->config['publicPath'])
             ->setSourcePath($this->config['sourcePath'])
+            ->setRebase($this->config['rebase'])
             ->setEnableCache($this->config['enableCache'])
             ->setOptimize($this->config['optimize'])
-            ->setAsync($this->config['async'])
             ->setOptimizerOptions($this->config['optimizerOptions'])
             ->setScaler($scaler);
     }
@@ -83,6 +85,8 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
         $scaler
             ->setMinFileSize($this->config['minFileSize'])
             ->setMinWidth($this->config['minWidth'])
+            ->setMaxFileSize($this->config['maxFileSize'])
+            ->setMaxWidth($this->config['maxWidth'])
             ->setStepModifier($this->config['stepModifier']);
 
         return $scaler;

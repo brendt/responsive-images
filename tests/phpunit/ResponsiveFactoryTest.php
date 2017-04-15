@@ -132,32 +132,25 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($optimizedImageFileSize <= $normalImageFileSize);
     }
 
-//    public function test_async() {
-//        $testCase = $this;
-//        $url = 'img/image.jpeg';
-//        $factory = new ResponsiveFactory(new DefaultConfigurator([
-//            'publicPath'   => $this->publicPath,
-//            'engine'       => 'gd',
-//            'stepModifier' => 0.5,
-//            'scaler'       => 'filesize',
-//            'enableCache'  => false,
-//            'async'        => true,
-//        ]));
-//
-//        $responsiveImage = $factory->create($url);
-//
-//        $this->assertTrue(count($responsiveImage->getSrcset()) > 1);
-//        $this->assertEquals("/{$url}", $responsiveImage->src());
-//
-//        $responsiveImage->onSave(function () use ($testCase, $responsiveImage) {
-//            $fs = new Filesystem();
-//
-//            foreach ($responsiveImage->getSrcset() as $src) {
-//                $src = trim($src, '/');
-//                $testCase->assertTrue($fs->exists("{$testCase->publicPath}/{$src}"));
-//            }
-//        });
-//
-//        \Amp\wait($responsiveImage->getPromise());
-//    }
+    /**
+     * @test
+     */
+    public function test_rebase() {
+        $configurator = new DefaultConfigurator([
+            'publicPath'   => './tests/public',
+            'sourcePath'   => './tests/img',
+            'rebase'       => true,
+            'engine'       => 'gd',
+            'stepModifier' => 0.5,
+            'scaler'       => 'width',
+        ]);
+
+        $responsiveFactory = new ResponsiveFactory($configurator);
+
+        $image = $responsiveFactory->create('/img/responsive/image.jpeg');
+
+        $this->assertTrue($this->fs->exists('./tests/public/img/responsive/image.jpeg'));
+        $this->assertEquals('/img/responsive/image.jpeg', $image->src());
+        $this->assertContains('/img/responsive', $image->srcset());
+    }
 }

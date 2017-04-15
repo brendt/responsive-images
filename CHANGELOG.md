@@ -1,5 +1,15 @@
 # Changelog
 
+# 1.6.0
+
+- Add `rebase` parameter.
+- Add `maxFileSize` parameter.
+- Add `maxWidth` parameter.
+
+## 1.5.1
+
+- Fix a bug so that unkown file exceptions are correctly thrown.
+
 ## 1.5.0
 
 - Removed AMP dependencies.
