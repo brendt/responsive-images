@@ -164,7 +164,7 @@ class ResponsiveFactory
         $imageObject->destroy();
 
         $this->createScaledImages($sourceImage, $responsiveImage);
-
+        
         return $responsiveImage;
     }
 
@@ -187,26 +187,8 @@ class ResponsiveFactory
 
         foreach ($sizes as $width => $height) {
             $scaledFileSrc = trim("{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}", '/');
-            $responsiveImage->addSource($scaledFileSrc, $width);
-        }
-
-        $this->scaleProcess($sourceImage, $responsiveImage);
-
-        return $responsiveImage;
-    }
-
-    /**
-     * @param SplFileInfo     $sourceImage
-     * @param ResponsiveImage $responsiveImage
-     */
-    public function scaleProcess(SplFileInfo $sourceImage, ResponsiveImage $responsiveImage) {
-        $urlPath = $responsiveImage->getUrlPath();
-        $imageObject = $this->engine->make($sourceImage->getPathname());
-        $sizes = $this->scaler->scale($sourceImage, $imageObject);
-
-        foreach ($sizes as $width => $height) {
-            $scaledFileSrc = trim("{$urlPath}/{$imageObject->filename}-{$width}.{$imageObject->extension}", '/');
             $scaledFilePath = "{$this->getPublicPath()}/{$scaledFileSrc}";
+            $responsiveImage->addSource($scaledFileSrc, $width);
 
             $scaledImage = $imageObject->resize((int) $width, (int) $height)->encode($imageObject->extension);
 
@@ -220,6 +202,8 @@ class ResponsiveFactory
         if ($this->optimize) {
             $this->optimizeResponsiveImage($responsiveImage);
         }
+
+        return $responsiveImage;
     }
 
     /**
@@ -229,7 +213,7 @@ class ResponsiveFactory
      *
      * @return ResponsiveImage
      */
-    public function optimizeResponsiveImage(ResponsiveImage $responsiveImage) : ResponsiveImage {
+    private function optimizeResponsiveImage(ResponsiveImage $responsiveImage) : ResponsiveImage {
         foreach ($responsiveImage->getSrcset() as $imageFile) {
             $this->optimizer->optimize("{$this->publicPath}/{$imageFile}");
         }

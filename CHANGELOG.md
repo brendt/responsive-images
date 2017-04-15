@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.1
+
+- Bugfix for srcset not correctly rendering.
+
 ## 1.7.0
 
 - Add `sizes` scaler. This scaler can be configured to generate a fixed set of images based on pre-defined widths, 
