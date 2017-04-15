@@ -40,6 +40,20 @@ interface Scaler
     public function setMinWidth($minWidth);
 
     /**
+     * @param $maxFileSize
+     *
+     * @return mixed
+     */
+    public function setMaxFileSize($maxFileSize);
+
+    /**
+     * @param $maxWidth
+     *
+     * @return mixed
+     */
+    public function setMaxWidth($maxWidth);
+
+    /**
      * @param $stepModifier
      *
      * @return mixed

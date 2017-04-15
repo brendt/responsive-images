@@ -2,7 +2,6 @@
 
 namespace Brendt\Image\Scaler;
 
-use Brendt\Image\ResponsiveImage;
 use Intervention\Image\Image;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -24,7 +23,9 @@ class WidthScaler extends AbstractScaler
             $width = floor($width * $this->stepModifier);
             $height = floor($height * $this->stepModifier);
 
-            $sizes[(int) $width] = $height;
+            if (!$this->maxWidth || $width <= $this->maxWidth) {
+                $sizes[(int) $width] = $height;
+            }
         }
 
         return $sizes;

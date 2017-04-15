@@ -27,7 +27,9 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
         'scaler'           => 'filesize',
         'stepModifier'     => 0.5,
         'minFileSize'      => 5000,
-        'minWidth'         => 150,
+        'maxFileSize'      => null,
+        'minWidth'         => 300,
+        'maxWidth'         => null,
         'optimizerOptions' => [],
     ];
 
@@ -83,6 +85,8 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
         $scaler
             ->setMinFileSize($this->config['minFileSize'])
             ->setMinWidth($this->config['minWidth'])
+            ->setMaxFileSize($this->config['maxFileSize'])
+            ->setMaxWidth($this->config['maxWidth'])
             ->setStepModifier($this->config['stepModifier']);
 
         return $scaler;

@@ -28,7 +28,9 @@ class FileSizeScaler extends AbstractScaler
             // Magic formula.
             $newWidth = floor(sqrt(($fileSize / $pixelPrice) / $ratio));
 
-            $sizes[(int) $newWidth] = (int) $newWidth * $ratio;
+            if ((!$this->maxFileSize || $fileSize <= $this->maxFileSize) && (!$this->maxWidth || $newWidth <= $this->maxWidth)) {
+                $sizes[(int) $newWidth] = (int) $newWidth * $ratio;
+            }
 
             $fileSize = $fileSize * $this->stepModifier;
         } while ($fileSize > $this->minFileSize && $newWidth > $this->minWidth);
