@@ -117,33 +117,32 @@ class ResponsiveFactory
     public function create($src) {
         $responsiveImage = new ResponsiveImage($src);
         $src = $responsiveImage->src();
-        $sourcePath = $src;
-        if ($this->rebase) {
-            $sourcePath = pathinfo($src, PATHINFO_BASENAME);
-        }
-        
-        $sourceImage = $this->getImageFile($this->sourcePath, $sourcePath);
+        $sourceFilename = $this->rebase ? pathinfo($src, PATHINFO_BASENAME) : $src;
+
+        $sourceImage = $this->getImageFile($this->sourcePath, $sourceFilename);
 
         if (!$sourceImage) {
-            throw new FileNotFoundException("{$this->sourcePath}/{$sourcePath}");
+            throw new FileNotFoundException("{$this->sourcePath}/{$sourceFilename}");
         }
 
+        $publicDirectory = $this->rebase ? trim(pathinfo($src, PATHINFO_DIRNAME), '/') : $sourceImage->getRelativePath();
+
         $extension = pathinfo($sourceImage->getExtension(), PATHINFO_EXTENSION);
-        $fileName = pathinfo($sourceImage->getFilename(), PATHINFO_FILENAME);
-        $publicImagePath = "{$this->publicPath}/{$src}";
+        $imageFilename = pathinfo($sourceImage->getFilename(), PATHINFO_FILENAME);
+        $publicImagePath = "{$this->publicPath}{$src}";
         $urlPath = '/' . trim(pathinfo($src, PATHINFO_DIRNAME), '/');
 
         $responsiveImage->setExtension($sourceImage->getExtension());
-        $responsiveImage->setFileName($fileName);
+        $responsiveImage->setFileName($imageFilename);
         $responsiveImage->setUrlPath($urlPath);
 
         if ($this->enableCache && $this->fs->exists($publicImagePath)) {
             /** @var SplFileInfo[] $cachedFiles */
-            $cachedFiles = Finder::create()->files()->in("{$this->publicPath}/{$sourceImage->getRelativePath()}")->name("{$fileName}-*.{$extension}");
+            $cachedFiles = Finder::create()->files()->in("{$this->publicPath}/{$publicDirectory}")->name("{$imageFilename}-*.{$extension}");
 
             foreach ($cachedFiles as $cachedFile) {
                 $cachedFilename = $cachedFile->getFilename();
-                $size = (int) str_replace(".{$extension}", '', str_replace("{$fileName}-", '', $cachedFilename));
+                $size = (int) str_replace(".{$extension}", '', str_replace("{$imageFilename}-", '', $cachedFilename));
 
                 $responsiveImage->addSource("{$urlPath}/{$cachedFilename}", $size);
             }

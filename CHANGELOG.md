@@ -1,5 +1,9 @@
 # Changelog
 
+# 1.7.3
+
+- Bugfix for invalid cache path when rebase was enabled.
+
 ## 1.7.2
 
 - Bugfix for wrong composer sources.
