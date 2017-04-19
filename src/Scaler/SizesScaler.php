@@ -36,6 +36,11 @@ class SizesScaler extends AbstractScaler
         $ratio = $imageHeight / $imageWidth;
 
         $sizes = [];
+
+        if ($this->includeSource) {
+            $sizes[$imageWidth] = $imageHeight;
+        }
+
         foreach ($this->sizes as $width) {
             if ($width > $imageWidth) {
                 continue;

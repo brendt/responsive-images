@@ -42,10 +42,10 @@ class SizesScalerTest extends TestCase
         }
     }
 
-
     public function test_scale_down() {
         $scaler = new SizesScaler(new DefaultConfigurator([
-            'publicPath' => $this->publicPath,
+            'publicPath'    => $this->publicPath,
+            'includeSource' => false,
         ]));
         $scaler->setSizes([500, 10000, 1920]);
 
@@ -55,6 +55,21 @@ class SizesScalerTest extends TestCase
         $sizes = $scaler->scale($sourceFile, $imageObject);
 
         $this->assertCount(2, $sizes);
+    }
+
+    public function test_scale_down_with_include_source() {
+        $scaler = new SizesScaler(new DefaultConfigurator([
+            'publicPath'    => $this->publicPath,
+            'includeSource' => true,
+        ]));
+        $scaler->setSizes([500, 800]);
+
+        $sourceFile = $this->createSourceFile();
+        $imageObject = $this->createImageObject();
+
+        $sizes = $scaler->scale($sourceFile, $imageObject);
+        
+        $this->assertCount(3, $sizes);
     }
 
 
