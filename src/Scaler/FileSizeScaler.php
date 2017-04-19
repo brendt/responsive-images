@@ -21,18 +21,20 @@ class FileSizeScaler extends AbstractScaler
         $ratio = $height / $width;
         $area = $width * $width * $ratio;
         $pixelPrice = $fileSize / $area;
-
+        
         $sizes = [];
 
+        if ($this->includeSource && (!$this->maxWidth || $width <= $this->maxWidth) && (!$this->maxFileSize || $fileSize <= $this->maxFileSize)) {
+            $sizes[$width] = $height;
+        }
+
         do {
-            // Magic formula.
+            $fileSize = $fileSize * $this->stepModifier;
             $newWidth = floor(sqrt(($fileSize / $pixelPrice) / $ratio));
 
             if ((!$this->maxFileSize || $fileSize <= $this->maxFileSize) && (!$this->maxWidth || $newWidth <= $this->maxWidth)) {
                 $sizes[(int) $newWidth] = (int) $newWidth * $ratio;
             }
-
-            $fileSize = $fileSize * $this->stepModifier;
         } while ($fileSize > $this->minFileSize && $newWidth > $this->minWidth);
 
         return $sizes;

@@ -60,5 +60,12 @@ interface Scaler
      */
     public function setStepModifier($stepModifier);
 
+    /**
+     * @param $includeSource
+     *
+     * @return mixed
+     */
+    public function setIncludeSource(bool $includeSource) : Scaler;
+
 
 }

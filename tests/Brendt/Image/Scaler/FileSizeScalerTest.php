@@ -84,6 +84,16 @@ class FileSizeScalerTest extends TestCase
         $this->assertCount(3, $sizes);
     }
 
+    public function test_scale_down_with_include_source_disabled() {
+        $sourceFile = $this->createSourceFile();
+        $imageObject = $this->createImageObject();
+
+        $this->scaler->setIncludeSource(false);
+        $sizes = $this->scaler->scale($sourceFile, $imageObject);
+
+        $this->assertFalse(array_key_exists(1920, $sizes));
+    }
+
     // TODO: test algorithm
 
     private function createImageObject() {

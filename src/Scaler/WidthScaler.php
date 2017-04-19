@@ -17,8 +17,12 @@ class WidthScaler extends AbstractScaler
     public function scale(SplFileInfo $sourceFile, Image $imageObject) : array {
         $width = $imageObject->getWidth();
         $height = $imageObject->getHeight();
-
         $sizes = [];
+
+        if ($this->includeSource && (!$this->maxWidth || $width <= $this->maxWidth)) {
+            $sizes[$width] = $height;
+        }
+
         while ($width >= $this->minWidth) {
             $width = floor($width * $this->stepModifier);
             $height = floor($height * $this->stepModifier);

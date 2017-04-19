@@ -154,14 +154,6 @@ class ResponsiveFactory
             $this->fs->dumpFile($publicImagePath, $sourceImage->getContents());
         }
 
-        $imageObject = $this->engine->make($sourceImage->getPathname());
-
-        // TODO: This piece of code should be added as a size and not as a "default".
-        // It's because the WidthScaler skips the default size.
-        $width = $imageObject->getWidth();
-        $responsiveImage->addSource($src, $width);
-        $imageObject->destroy();
-
         $this->createScaledImages($sourceImage, $responsiveImage);
         
         return $responsiveImage;

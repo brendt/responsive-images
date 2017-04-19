@@ -1,6 +1,10 @@
 # Changelog
 
-# 1.7.3
+## 1.8.0
+
+- Add `includeSource` parameter.
+
+## 1.7.3
 
 - Bugfix for invalid cache path when rebase was enabled.
 

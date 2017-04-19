@@ -33,6 +33,7 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
         'maxWidth'         => null,
         'sizes'            => [],
         'optimizerOptions' => [],
+        'includeSource'    => true,
     ];
 
     /**
@@ -89,6 +90,7 @@ class DefaultConfigurator implements ResponsiveFactoryConfigurator
      */
     public function configureScaler(Scaler $scaler) {
         $scaler
+            ->setIncludeSource($this->config['includeSource'])
             ->setMinFileSize($this->config['minFileSize'])
             ->setMinWidth($this->config['minWidth'])
             ->setMaxFileSize($this->config['maxFileSize'])

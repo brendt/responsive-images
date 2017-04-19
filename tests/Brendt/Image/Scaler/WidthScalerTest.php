@@ -77,6 +77,16 @@ class WidthScalerTest extends TestCase
         }
     }
 
+    public function test_scale_down_with_include_source_disabled() {
+        $sourceFile = $this->createSourceFile();
+        $imageObject = $this->createImageObject();
+
+        $this->scaler->setIncludeSource(false);
+        $sizes = $this->scaler->scale($sourceFile, $imageObject);
+
+        $this->assertFalse(array_key_exists(1920, $sizes));
+    }
+
     private function createSourceFile() {
         $sourceFiles = Finder::create()->files()->in('./tests/img')->name('image.jpeg')->getIterator();
         $sourceFiles->rewind();

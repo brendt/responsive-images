@@ -32,6 +32,11 @@ abstract class AbstractScaler implements Scaler
     protected $stepModifier;
 
     /**
+     * @var bool
+     */
+    protected $includeSource;
+
+    /**
      * Scaler constructor.
      *
      * @param DefaultConfigurator $configurator
@@ -91,6 +96,17 @@ abstract class AbstractScaler implements Scaler
      */
     public function setStepModifier($stepModifier) {
         $this->stepModifier = $stepModifier;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $includeSource
+     *
+     * @return Scaler
+     */
+    public function setIncludeSource(bool $includeSource) : Scaler {
+        $this->includeSource = $includeSource;
 
         return $this;
     }

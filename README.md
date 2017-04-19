@@ -41,6 +41,7 @@ A default configurator `DefaultConfigurator` is provider out of the box, and use
 ```php
 [
     'driver'           => 'gd',
+    'includeSource'    => true,
     'publicPath'       => './',
     'sourcePath'       => './',
     'rebase'           => false,
@@ -72,6 +73,7 @@ $factory = new ResponsiveFactory(new DefaultConfigurator([
 ### All configuration options
 
 - `driver`: the image driver to use. Defaults to `gd`. Possible options are `gd` or `imagick`.
+- `includeSource`: whether to include the source image in the `srcset`. Defaults to `true`.
 - `sourcePath`: the path to load image source files. Defaults to `./`.
 - `publicPath`: the path to render image files. Defaults to `./`.
 - `rebase`: ignore the path of the requested image when searching in the source directory. Defaults to `false`.
