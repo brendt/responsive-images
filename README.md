@@ -53,8 +53,8 @@ A default configurator `DefaultConfigurator` is provider out of the box, and use
     'maxFileSize'      => null,
     'minWidth'         => 300,
     'maxWidth'         => null,
-    'sizes'            => [],
-    'optimizerOptions' => [ 1920, 840, 300 ],
+    'sizes'            => [ 1920, 840, 300 ],
+    'optimizerOptions' => [],
 ]
 ```
 
@@ -87,6 +87,7 @@ $factory = new ResponsiveFactory(new DefaultConfigurator([
 - `maxWidth`: the maximum image size in pixels. No images with size smaller than this number will be rendered. Defaults to `null`.
 - `sizes`: this parameter is used when the `sizes` scaler is enabled. This scaler will generate a fixed set of sizes, based on this array. 
  The expected values are the widths of the generated images. Defaults to `[]` (empty array). 
+- `optimizerOptions`: options to pass to the image optimizer library. See [https://github.com/psliwa/image-optimizer](https://github.com/psliwa/image-optimizer) for more information.
 
 ### Paths
 
