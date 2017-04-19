@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.1
+
+- Bugfix for extension of cached files not correctly loading.
+
 ## 1.8.0
 
 - Add `includeSource` parameter.
