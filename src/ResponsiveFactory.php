@@ -127,7 +127,7 @@ class ResponsiveFactory
 
         $publicDirectory = $this->rebase ? trim(pathinfo($src, PATHINFO_DIRNAME), '/') : $sourceImage->getRelativePath();
 
-        $extension = pathinfo($sourceImage->getExtension(), PATHINFO_EXTENSION);
+        $extension = $sourceImage->getExtension();
         $imageFilename = pathinfo($sourceImage->getFilename(), PATHINFO_FILENAME);
         $publicImagePath = "{$this->publicPath}{$src}";
         $urlPath = '/' . trim(pathinfo($src, PATHINFO_DIRNAME), '/');
