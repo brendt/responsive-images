@@ -36,11 +36,6 @@ class ResponsiveImage
     private $urlPath = '';
 
     /**
-     * @var Promise
-     */
-    private $promise;
-
-    /**
      * ResponsiveImage constructor.
      *
      * @param      $src
