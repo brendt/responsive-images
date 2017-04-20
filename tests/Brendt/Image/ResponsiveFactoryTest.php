@@ -153,8 +153,8 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
     public function test_cached_result() {
         $src = file_get_contents('./tests/img/image.jpeg');
         
-        if (!$this->fs->exists($this->publicPath)) {
-            $this->fs->mkdir($this->publicPath);
+        if (!$this->fs->exists('./tests/public/img')) {
+            $this->fs->mkdir('./tests/public/img');
         }
 
         $this->fs->dumpFile('./tests/public/img/image.jpeg', $src);
