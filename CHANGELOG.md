@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.0
+
+- Refactor code directories.
+
 ## 1.8.2
 
 - Cleanup Responsive Factory code.

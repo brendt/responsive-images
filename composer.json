@@ -22,7 +22,7 @@
     },
     "autoload" : {
         "psr-4" : {
-            "Brendt\\Image\\" : "src/"
+            "Brendt\\Image\\" : "src/Brendt/Image"
         }
     }
 }
