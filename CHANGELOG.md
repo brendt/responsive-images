@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.2
+
+- Cleanup Responsive Factory code.
+- Add caching test.
+
 ## 1.8.1
 
 - Bugfix for extension of cached files not correctly loading.

@@ -33,17 +33,13 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
         $this->fs = new Filesystem();
     }
 
-    public function __destruct() {
+    protected function tearDown() {
         if ($this->fs->exists($this->publicPath)) {
             $this->fs->remove($this->publicPath);
         }
     }
 
     public function setUp() {
-        if ($this->fs->exists($this->publicPath)) {
-            $this->fs->remove($this->publicPath);
-        }
-
         $this->configurator = new DefaultConfigurator([
             'publicPath'   => $this->publicPath,
             'engine'       => 'gd',
@@ -152,5 +148,28 @@ class ResponsiveFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($this->fs->exists('./tests/public/img/responsive/image.jpeg'));
         $this->assertEquals('/img/responsive/image.jpeg', $image->src());
         $this->assertContains('/img/responsive', $image->srcset());
+    }
+
+    public function test_cached_result() {
+        $src = file_get_contents('./tests/img/image.jpeg');
+        
+        if (!$this->fs->exists($this->publicPath)) {
+            $this->fs->mkdir($this->publicPath);
+        }
+
+        $this->fs->dumpFile('./tests/public/img/image.jpeg', $src);
+        $this->fs->dumpFile('./tests/public/img/image-500.jpeg', $src);
+        $this->fs->dumpFile('./tests/public/img/image-1000.jpeg', $src);
+
+        $factory = new ResponsiveFactory(new DefaultConfigurator([
+            'publicPath'   => './tests/public',
+            'sourcePath'   => './tests',
+            'enableCache' => true
+        ]));
+        $image = $factory->create('/img/image.jpeg');
+
+        $srcset = $image->getSrcset();
+        $this->assertArrayHasKey(500, $srcset);
+        $this->assertArrayHasKey(1000, $srcset);
     }
 }

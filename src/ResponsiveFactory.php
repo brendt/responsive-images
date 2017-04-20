@@ -118,25 +118,40 @@ class ResponsiveFactory
         $responsiveImage = new ResponsiveImage($src);
         $src = $responsiveImage->src();
         $sourceFilename = $this->rebase ? pathinfo($src, PATHINFO_BASENAME) : $src;
+        $sourceFile = $this->getImageFile($this->sourcePath, $sourceFilename);
 
-        $sourceImage = $this->getImageFile($this->sourcePath, $sourceFilename);
-
-        if (!$sourceImage) {
-            throw new FileNotFoundException("{$this->sourcePath}/{$sourceFilename}");
-        }
-
-        $publicDirectory = $this->rebase ? trim(pathinfo($src, PATHINFO_DIRNAME), '/') : $sourceImage->getRelativePath();
-
-        $extension = $sourceImage->getExtension();
-        $imageFilename = pathinfo($sourceImage->getFilename(), PATHINFO_FILENAME);
-        $publicImagePath = "{$this->publicPath}{$src}";
+        $filename = pathinfo($sourceFile->getFilename(), PATHINFO_FILENAME);
         $urlPath = '/' . trim(pathinfo($src, PATHINFO_DIRNAME), '/');
 
-        $responsiveImage->setExtension($sourceImage->getExtension());
-        $responsiveImage->setFileName($imageFilename);
+        $responsiveImage->setExtension($sourceFile->getExtension());
+        $responsiveImage->setFileName($filename);
         $responsiveImage->setUrlPath($urlPath);
 
+        if ($cachedResponsiveImage = $this->getCachedResponsiveImage($responsiveImage, $sourceFile)) {
+            return $cachedResponsiveImage;
+        }
+
+        $this->fs->dumpFile("{$this->publicPath}{$src}", $sourceFile->getContents());
+        $this->createScaledImages($sourceFile, $responsiveImage);
+        
+        return $responsiveImage;
+    }
+
+    /**
+     * @param ResponsiveImage $responsiveImage
+     * @param SplFileInfo     $imageFile
+     *
+     * @return ResponsiveImage|null
+     */
+    public function getCachedResponsiveImage(ResponsiveImage $responsiveImage, SplFileInfo $imageFile) : ?ResponsiveImage {
+        $src = $responsiveImage->src();
+        $publicImagePath = "{$this->publicPath}{$src}";
+
         if ($this->enableCache && $this->fs->exists($publicImagePath)) {
+            $extension = $imageFile->getExtension();
+            $publicDirectory = $this->rebase ? trim(pathinfo($src, PATHINFO_DIRNAME), '/') : $imageFile->getRelativePath();
+            $imageFilename = pathinfo($imageFile->getFilename(), PATHINFO_FILENAME);
+            
             /** @var SplFileInfo[] $cachedFiles */
             $cachedFiles = Finder::create()->files()->in("{$this->publicPath}/{$publicDirectory}")->name("{$imageFilename}-*.{$extension}");
 
@@ -144,19 +159,13 @@ class ResponsiveFactory
                 $cachedFilename = $cachedFile->getFilename();
                 $size = (int) str_replace(".{$extension}", '', str_replace("{$imageFilename}-", '', $cachedFilename));
 
-                $responsiveImage->addSource("{$urlPath}/{$cachedFilename}", $size);
+                $responsiveImage->addSource("{$responsiveImage->getUrlPath()}/{$cachedFilename}", $size);
             }
 
             return $responsiveImage;
         }
 
-        if (!$this->enableCache || !$this->fs->exists($publicImagePath)) {
-            $this->fs->dumpFile($publicImagePath, $sourceImage->getContents());
-        }
-
-        $this->createScaledImages($sourceImage, $responsiveImage);
-        
-        return $responsiveImage;
+        return null;
     }
 
     /**
@@ -216,13 +225,21 @@ class ResponsiveFactory
      * @param string $directory
      * @param string $path
      *
-     * @return SplFileInfo
+     * @return null|SplFileInfo
+     * @throws FileNotFoundException
      */
     private function getImageFile(string $directory, string $path) : ?SplFileInfo {
-        $iterator = Finder::create()->files()->in($directory)->path(ltrim($path, '/'))->getIterator();
+        $path = ltrim($path, '/');
+        $iterator = Finder::create()->files()->in($directory)->path($path)->getIterator();
         $iterator->rewind();
 
-        return $iterator->current();
+        $sourceImage = $iterator->current();
+
+        if (!$sourceImage) {
+            throw new FileNotFoundException("{$this->sourcePath}/{$path}");
+        }
+
+        return $sourceImage;
     }
 
     /**
