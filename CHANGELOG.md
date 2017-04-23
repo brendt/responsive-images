@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.1
+
+- Support PHP 7.0
+
 ## 1.9.0
 
 - Refactor code directories.
